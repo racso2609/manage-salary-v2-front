@@ -32,7 +32,7 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
 
   useEffect(() => {
     if (sessionToken) handleRefreshToken();
-  }, [sessionToken]);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ sessionToken, setSessionToken, isLogged }}>

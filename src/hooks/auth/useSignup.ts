@@ -3,18 +3,18 @@ import { FnHandlers } from "../../types/handlers";
 import { manageSalaryFetcher } from "../../utils/fetchers";
 
 export type useSignup = {
-  handlers: FnHandlers<undefined>;
+  handlers?: FnHandlers<undefined>;
 };
 
-const useSignup = ({ handlers }: useSignup) => {
+const useSignup = ({ handlers }: useSignup = {}) => {
   const { setSessionToken } = useAuthContext();
 
   const handleSuccess = () => {
-    if (handlers.onSuccess) handlers.onSuccess();
+    if (handlers?.onSuccess) handlers.onSuccess();
   };
 
   const handleError = (error: unknown) => {
-    if (handlers.onError) handlers.onError(error);
+    if (handlers?.onError) handlers.onError(error);
   };
 
   const handleSignup = async (data: {
