@@ -13,7 +13,7 @@ type TagItem = {
 
 const TagComponent = styled.section`
   display: grid;
-  grid-template-columns: 1fr 0.5fr;
+  grid-template-columns: 1fr 0.6fr;
   background: gray;
   border-radius: 10px;
   padding: 5px 15px;
