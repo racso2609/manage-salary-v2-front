@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { Outlet } from "react-router";
 import { FC } from "react";
+import MainBar from "../NavBars/MainBar";
 
 export const Layout = styled.main`
   display: flex;
@@ -8,15 +9,18 @@ export const Layout = styled.main`
   justify-content: center;
   align-items: center;
 
-  width: 100vw;
-  height: 100vh;
+  width: calc(100vw);
+  height: calc(100vh - 60px);
 `;
 
 const MainLayout: FC = () => {
   return (
-    <Layout>
-      <Outlet />
-    </Layout>
+    <>
+      <MainBar />
+      <Layout>
+        <Outlet />
+      </Layout>
+    </>
   );
 };
 

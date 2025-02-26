@@ -11,6 +11,7 @@ export type useForm<T> = {
   className?: string;
   name?: string;
   type?: string;
+  required?: boolean;
 };
 
 const useForm = <T>({

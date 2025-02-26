@@ -1,3 +1,4 @@
+import { redirect } from "react-router";
 import { API_URL } from "../../constants/urls";
 import { SESSION_TOKEN_KEY } from "../../stores/auth";
 
@@ -38,12 +39,15 @@ export const manageSalaryFetcher = async <T>(
   url: `/${string}`,
   options: FetcherArgs = {},
 ) => {
-  try {
-    return fetcher<T>(API_URL + url, options);
-    // eslint-disable-next-line
-  } catch (error: any) {
-    if (error.statusCode) localStorage.setItem(SESSION_TOKEN_KEY, "");
+  // try {
+  return await fetcher<T>(API_URL + url, options);
+  // } catch (error: any) {
+  // console.log("=== error", error.statusCode);
+  // if (error.statusCode === 401) {
+  //   localStorage.setItem(SESSION_TOKEN_KEY, "");
+  //   redirect("/");
+  // }
 
-    throw error;
-  }
+  // throw error;
+  // }
 };

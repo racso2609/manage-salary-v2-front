@@ -5,13 +5,16 @@ import App from "./App.tsx";
 import AuthProvider from "./context/AuthContext.tsx";
 import "normalize.css";
 import { BrowserRouter } from "react-router";
+import { SWRConfig } from "swr";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </BrowserRouter>
+    <SWRConfig>
+      <BrowserRouter>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </BrowserRouter>
+    </SWRConfig>
   </StrictMode>,
 );
