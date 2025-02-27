@@ -18,7 +18,7 @@ const useCreateRecord = ({ handlers }: useCreateRecord = {}) => {
   };
 
   const handleCreateRecord = async (
-    data: Omit<Record, "tag"> & { tag: string },
+    data: Omit<Record, "tag" | "_id" | "createdAt"> & { tag: string },
   ) => {
     try {
       if (Number(data.amount) < 0 || !["in", "out"].includes(data.type))
