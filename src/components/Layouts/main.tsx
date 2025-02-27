@@ -10,7 +10,9 @@ export const Layout = styled.main`
   align-items: center;
 
   width: calc(100vw);
-  height: calc(100vh - 60px);
+  min-height: calc(100vh - 60px);
+  overflow-y: auto;
+  padding: 20px;
 `;
 
 const MainLayout: FC = () => {
