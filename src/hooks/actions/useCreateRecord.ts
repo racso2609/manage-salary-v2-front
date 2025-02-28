@@ -26,7 +26,7 @@ const useCreateRecord = ({ handlers }: useCreateRecord = {}) => {
       await manageSalaryFetcher("/records", {
         body: {
           ...data,
-          amount: (BigInt(data.amount) * 100n).toString(),
+          amount: (Number(data.amount) * 100).toString(),
         },
         headers: {
           Authorization: `Bearer ${sessionToken}`,
