@@ -110,7 +110,7 @@ const LoginPage: FC = () => {
         <Input {...userNameInput} />
         <Input {...passwordInput} />
       </LoginForm>
-      <button onClick={handleSubmit}>{error??"Submit"}</button>
+      <button onClick={handleSubmit}>{error||"Submit"}</button>
     </Login>
   );
 };
