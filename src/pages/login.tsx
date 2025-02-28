@@ -54,6 +54,7 @@ const LoginForm = styled.form`
 const LoginPage: FC = () => {
   const [type, setType] = useState<"login" | "register">("login");
 
+  const [error, setError] = useState("");
   const emailInput = useForm({
     type: "email",
     defaultValue: "",
@@ -77,7 +78,7 @@ const LoginPage: FC = () => {
     required: true,
   });
 
-  const { handleLogin } = useLogin();
+  const { handleLogin } = useLogin({handlers:{onError: (e)=>setError(e.message)}});
   const { handleSignup } = useSignup();
 
   const handleSubmit = (e: any) => {
@@ -109,7 +110,7 @@ const LoginPage: FC = () => {
         <Input {...userNameInput} />
         <Input {...passwordInput} />
       </LoginForm>
-      <button onClick={handleSubmit}>Submit</button>
+      <button onClick={handleSubmit}>{error??"Submit"}</button>
     </Login>
   );
 };
