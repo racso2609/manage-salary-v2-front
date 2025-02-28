@@ -15,21 +15,25 @@ const Tag = styled.section`
 `;
 
 const TagsPage = () => {
-  const temporalState = useTemporalState<string>();
+  const temporalState = useTemporalState<{ text: string; class: string }>();
 
   const tagNameInput = useForm({
     defaultValue: "",
     placeholder: "Tag name",
     id: "tagName",
+    required: true,
   });
 
   const { handleCreateTag } = useCreateTag({
     handlers: {
       onSuccess: () => {
-        temporalState.setState("Tag created");
+        temporalState.setState({ text: "Tag created", class: "success" });
       },
-      onError: () => {
-        temporalState.setState("Error creating tag");
+      onError: (e: any) => {
+        temporalState.setState({
+          text: e.message,
+          class: "danger",
+        });
       },
     },
   });
@@ -45,7 +49,9 @@ const TagsPage = () => {
       <p>This section is for create tags to categorize your your records</p>
       <form onSubmit={handleSubmit}>
         <Input {...tagNameInput} />
-        <button>{temporalState.state ?? "Create tag"}</button>
+        <button className={temporalState.state?.class}>
+          {temporalState.state?.text ?? "Create tag"}
+        </button>
       </form>
     </Tag>
   );
