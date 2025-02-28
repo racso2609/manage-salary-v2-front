@@ -78,7 +78,7 @@ const LoginPage: FC = () => {
     required: true,
   });
 
-  const { handleLogin } = useLogin({handlers:{onError: (e)=>setError(e.message)}});
+  const { handleLogin } = useLogin({handlers:{onError: (e:any)=>setError(e.message)}});
   const { handleSignup } = useSignup();
 
   const handleSubmit = (e: any) => {
