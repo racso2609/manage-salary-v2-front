@@ -13,17 +13,7 @@ const InOut = styled.form`
 
 const InOutPage = () => {
   const tags = useTags();
-  const temporalState = useTemporalState<string>();
-  const { handleCreateRecord } = useCreateRecord({
-    handlers: {
-      onSuccess: () => {
-        temporalState.setState("Record created");
-      },
-      onError: () => {
-        temporalState.setState("Failure creating record");
-      },
-    },
-  });
+  const temporalState = useTemporalState<{ text: string; class: string }>();
 
   const typeInput = useForm({
     defaultValue: "in",
@@ -50,11 +40,33 @@ const InOutPage = () => {
   });
 
   const tagInput = useForm({
-    defaultValue: "unknown",
+    defaultValue: "",
     type: "text",
     id: "tag",
     placeholder: "In-Out tag",
     required: true,
+  });
+
+  const cleanData = () => {
+    tagInput.onChange({ target: { value: "" } });
+    descriptionInput.onChange({ target: { value: "" } });
+    amountInput.onChange({ target: { value: "" } });
+    typeInput.onChange({ target: { value: "" } });
+  };
+
+  const { handleCreateRecord } = useCreateRecord({
+    handlers: {
+      onSuccess: () => {
+        cleanData();
+        temporalState.setState({ text: "Record created", class: "success" });
+      },
+      onError: (e: any) => {
+        temporalState.setState({
+          text: e.message,
+          class: "danger",
+        });
+      },
+    },
   });
 
   const handleSubmit = (e: any) => {
@@ -91,7 +103,9 @@ const InOutPage = () => {
           );
         })}
       </Select>
-      <button>{temporalState.state ?? "Create record"}</button>
+      <button className={temporalState.state?.class}>
+        {temporalState.state?.text ?? "Create record"}
+      </button>
     </InOut>
   );
 };

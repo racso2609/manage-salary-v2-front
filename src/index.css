@@ -76,4 +76,22 @@ button:focus-visible {
   font-weight: bold;
 }
 
+.danger {
+  background-color: red;
+}
+
+
+.danger-text {
+  color: red;
+}
+
+.success {
+  background-color: green;
+
+}
+
+.success-text {
+  background-color: green;
+}
+
 

@@ -58,12 +58,14 @@ const LoginPage: FC = () => {
     defaultValue: "",
     id: "email",
     placeholder: "Email",
+    required: true,
   });
   const passwordInput = useForm({
     type: "password",
     defaultValue: "",
     id: "password",
     placeholder: "Password",
+    required: true,
   });
 
   const userNameInput = useForm({
@@ -71,6 +73,7 @@ const LoginPage: FC = () => {
     defaultValue: "",
     id: "userName",
     placeholder: "Username",
+    required: true,
   });
 
   const { handleLogin } = useLogin();

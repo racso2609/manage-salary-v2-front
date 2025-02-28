@@ -14,17 +14,23 @@ type AuthContext = {
   sessionToken: string;
   setSessionToken: (data: string) => void;
   isLogged: boolean;
+  logout: () => void;
 };
 const AuthContext = createContext<AuthContext>({
   sessionToken: "a",
   setSessionToken: () => {},
   isLogged: false,
+  logout: () => {},
 });
 
 const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
   const [sessionToken, setSessionToken] = useAtom(sessionTokenAtom);
 
   const { handleRefreshToken } = useRefreshToken();
+
+  const logout = () => {
+    setSessionToken("");
+  };
 
   const isLogged = useMemo(() => {
     return !!sessionToken;
@@ -35,7 +41,9 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ sessionToken, setSessionToken, isLogged }}>
+    <AuthContext.Provider
+      value={{ sessionToken, setSessionToken, isLogged, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

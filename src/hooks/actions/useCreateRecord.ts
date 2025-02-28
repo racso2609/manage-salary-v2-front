@@ -21,8 +21,13 @@ const useCreateRecord = ({ handlers }: useCreateRecord = {}) => {
     data: Omit<Record, "tag" | "_id" | "createdAt"> & { tag: string },
   ) => {
     try {
-      if (Number(data.amount) < 0 || !["in", "out"].includes(data.type))
-        throw new Error("Invalid amount");
+      if (!Number(data.amount)) throw new Error("Invalid amount");
+
+      if (!["in", "out"].includes(data.type)) throw new Error("Invalid type");
+
+      if (!data.tag) throw new Error("Tag is required");
+      if (!data.description) throw new Error("Description is required");
+
       await manageSalaryFetcher("/records", {
         body: {
           ...data,

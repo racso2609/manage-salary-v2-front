@@ -46,6 +46,7 @@ const useForm = <T>({
     value,
     type,
     "data-label": props.label,
+    required: props.required,
   };
 };
 
