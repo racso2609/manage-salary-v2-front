@@ -14,7 +14,7 @@ const TypeSwitcher = styled.div`
   border: 2px solid white;
 
   width: 100%;
-  min-width: 200px;
+  max-width: 200px;
 
   span {
     font-weight: bold;
@@ -30,7 +30,8 @@ const TypeSwitcher = styled.div`
 `;
 
 const Login = styled.section`
-  min-width: 500px;
+  width: 100%;
+  max-width: 500px;
   gap: 10px;
   display: grid;
 `;
