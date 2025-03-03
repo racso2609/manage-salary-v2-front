@@ -18,6 +18,7 @@ const Dashboard = styled.section`
 
   h2 {
     margin-top: 0;
+    margin-bottom: 0;
   }
 `;
 
@@ -40,7 +41,7 @@ const ListsSection = styled.section`
 
 const Header = styled.header`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   padding: 10px 0px;
   gap: 20px;
 
@@ -78,7 +79,7 @@ const Header = styled.header`
   }
 
   .chart-section {
-    display: flex;
+    // display: flex;
   }
 `;
 
@@ -138,6 +139,7 @@ const DashboardPage = () => {
           width={"100%"}
           radius="10px"
           className="chart-section"
+          padding="10px"
         >
           {chartType === "in" && (
             <>
