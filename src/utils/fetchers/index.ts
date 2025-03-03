@@ -1,6 +1,6 @@
-import { redirect } from "react-router";
+// import { redirect } from "react-router";
 import { API_URL } from "../../constants/urls";
-import { SESSION_TOKEN_KEY } from "../../stores/auth";
+// import { SESSION_TOKEN_KEY } from "../../stores/auth";
 
 class FetcherError extends Error {
   statusCode: number;
