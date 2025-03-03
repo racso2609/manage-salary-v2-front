@@ -14,7 +14,7 @@ const TypeSwitcher = styled.div`
   border: 2px solid white;
 
   width: 100%;
-  max-width: 200px;
+  // max-width: 200px;
 
   span {
     font-weight: bold;
@@ -78,7 +78,9 @@ const LoginPage: FC = () => {
     required: true,
   });
 
-  const { handleLogin } = useLogin({handlers:{onError: (e:any)=>setError(e.message)}});
+  const { handleLogin } = useLogin({
+    handlers: { onError: (e: any) => setError(e.message) },
+  });
   const { handleSignup } = useSignup();
 
   const handleSubmit = (e: any) => {
@@ -110,7 +112,7 @@ const LoginPage: FC = () => {
         <Input {...userNameInput} />
         <Input {...passwordInput} />
       </LoginForm>
-      <button onClick={handleSubmit}>{error||"Submit"}</button>
+      <button onClick={handleSubmit}>{error || "Submit"}</button>
     </Login>
   );
 };
