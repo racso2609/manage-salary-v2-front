@@ -93,7 +93,7 @@ const DashboardPage = () => {
     limit: 1000000,
   });
   const { data, mutate: mutateDashboard } = useDashboardInfo();
-  const [chartType, setCharType] = useState<string>("in");
+  const [chartType, setCharType] = useState<string>("out");
 
   const handleDelete = (recordId: string, recordType?: "in" | "out") => {
     if (recordType === "in")

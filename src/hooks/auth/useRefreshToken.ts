@@ -31,9 +31,13 @@ const useRefreshToken = ({ handlers }: useRefreshToken = {}) => {
       );
 
       const token = response.token;
+      console.log("=== token", token);
       setSessionToken(token);
       handleSuccess();
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.statusCode === 401) {
+        setSessionToken("");
+      }
       handleError(error);
     }
   };

@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
@@ -8,13 +7,11 @@ import { BrowserRouter } from "react-router";
 import { SWRConfig } from "swr";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <SWRConfig>
-      <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </BrowserRouter>
-    </SWRConfig>
-  </StrictMode>,
+  <SWRConfig>
+    <BrowserRouter>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </BrowserRouter>
+  </SWRConfig>,
 );

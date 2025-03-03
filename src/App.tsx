@@ -19,6 +19,7 @@ function App() {
           <Route path="*" element={<Navigate replace to="/login" />} />
         </>
       )}
+
       {isLogged && (
         <>
           <Route element={<MainLayout />}>
@@ -29,6 +30,11 @@ function App() {
           </Route>
         </>
       )}
+
+      <Route
+        path="*"
+        element={<Navigate to={isLogged ? "/dashboard" : "login"} />}
+      />
     </Routes>
   );
 }

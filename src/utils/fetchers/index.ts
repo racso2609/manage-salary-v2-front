@@ -39,15 +39,19 @@ export const manageSalaryFetcher = async <T>(
   url: `/${string}`,
   options: FetcherArgs = {},
 ) => {
-  try {
-    return await fetcher<T>(API_URL + url, options);
-  } catch (error: any) {
-    console.log("=== error", error.statusCode);
-    if (error.statusCode === 401) {
-      localStorage.setItem(SESSION_TOKEN_KEY, "");
-      redirect("/");
-    }
+  // try {
+  return await fetcher<T>(API_URL + url, options);
+  // } catch (error: any) {
+  // console.log("=== error", error.statusCode);
+  // const existtokenInRequest =
+  // @ts-expect-error test
+  // options?.headers?.Authorization || options?.headers?.authorization;
 
-    throw error;
-  }
+  // if (existtokenInRequest && error.statusCode === 401) {
+  // localStorage.setItem(SESSION_TOKEN_KEY, "");
+  // redirect("/");
+  // }
+
+  throw error;
+  // }
 };
