@@ -122,7 +122,8 @@ const RecordsSection: FC<{
     if (!shouldFetch) return;
 
     setPage((prev) => prev + 1);
-  }, [isVisiable, data]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisiable, data, limit]);
 
   return (
     <div>
