@@ -1,18 +1,23 @@
-import { PieChart } from "@mui/x-charts";
+import { HighlightItemData, PieChart } from "@mui/x-charts";
 import { Record } from "../../types/manageSalaryTypes/records";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 export type RecordsChart = {
   records: Record[];
+  onTagClick?: (tagId: string) => void;
 };
 
-const RecordsChart = ({ records }: RecordsChart) => {
+const RecordsChart = ({ records, onTagClick }: RecordsChart) => {
+  const [highlightedItem, setHighlightedItem] =
+    useState<HighlightItemData | null>(null);
+
   const formattedData = useMemo(() => {
     return records
       .map((value) => {
         return {
-          id: value.tag.name,
+          id: value.tag._id,
           value: Number(value.amount),
+
           label: (location: string) =>
             (location !== "legend" ? value.tag.name : undefined) as string,
         };
@@ -32,14 +37,24 @@ const RecordsChart = ({ records }: RecordsChart) => {
         }[],
       );
   }, [records]);
+
   return (
     <>
       <PieChart
         height={200}
+        onItemClick={(_, item, params) => {
+          if (item.dataIndex === highlightedItem?.dataIndex)
+            setHighlightedItem(null);
+          else setHighlightedItem(item);
+          onTagClick?.(params.id.toString());
+        }}
+        highlightedItem={highlightedItem}
         series={[
           {
             data: formattedData,
-            arcLabel: (params) => params.label ?? "",
+
+            highlightScope: { fade: "global", highlight: "item" },
+
             innerRadius: 30,
             paddingAngle: 5,
             cornerRadius: 5,

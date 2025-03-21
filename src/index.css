@@ -14,7 +14,7 @@
 }
 * {
   box-sizing: border-box;
-  transition: 1s;
+  transition: .3s;
 }
 
 a {

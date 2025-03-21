@@ -1,12 +1,14 @@
 import styled from "styled-components";
 import useTags from "../hooks/fetching/useTags";
 import TagItem from "../components/Tag";
-import useRecords from "../hooks/fetching/useRecords";
 import RecordItem from "../components/Record";
 import { Card } from "../components/utils/card";
 import useDashboardInfo from "../hooks/fetching/useDashboardInfo";
 import RecordsChart from "../components/RecordsChart";
-import { useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
+import useRecords from "../hooks/fetching/useRecords";
+import useIsOnViewPort from "../hooks/effects/useOnViewPort";
+import useTag from "../hooks/fetching/useTag";
 
 const Dashboard = styled.section`
   margin: auto;
@@ -83,27 +85,85 @@ const Header = styled.header`
   }
 `;
 
+const RecordsSection: FC<{
+  tag?: string;
+  type: "in" | "out" | "all";
+  limit?: number;
+  onAction?: () => void;
+}> = ({ tag: tagId, type, limit = 5, onAction }) => {
+  const {
+    data,
+    mutate: mutateRecords,
+    setSize: setPage,
+  } = useRecords({
+    tag: tagId,
+    limit,
+    type,
+  });
+  const [ref, entry] = useIsOnViewPort<HTMLDivElement>();
+
+  const isVisiable = useMemo(() => {
+    return entry?.isIntersecting;
+  }, [entry]);
+
+  const handleDelete = (recordId: string) => {
+    mutateRecords((data) => {
+      return data?.map((page) => {
+        return page.filter((record) => record._id !== recordId);
+      });
+    });
+    onAction?.();
+  };
+
+  useEffect(() => {
+    if (!isVisiable) return;
+    const shouldFetch =
+      data?.length === 0 || data?.[data.length - 1]?.length === limit;
+    if (!shouldFetch) return;
+
+    setPage((prev) => prev + 1);
+  }, [isVisiable, data]);
+
+  return (
+    <div>
+      <ItemsLayout>
+        {data?.flat()?.map((record) => {
+          return (
+            <RecordItem
+              key={record._id}
+              record={record}
+              onDelete={() => handleDelete(record._id)}
+            />
+          );
+        })}
+        <div ref={ref} style={{ width: "100%", height: 5 }} />
+      </ItemsLayout>
+    </div>
+  );
+};
+
 const DashboardPage = () => {
+  const [selectedTag, setSelectedTag] = useState<string | undefined>(undefined);
   const { data: tags, mutate: mutateTags } = useTags();
-  const { data: recordsIn, mutate: mutateIn } = useRecords({
-    type: "in",
-    limit: 1000000,
-  });
-  const { data: recordsOut, mutate: mutateOut } = useRecords({
-    type: "out",
-    limit: 1000000,
-  });
+
   const { data, mutate: mutateDashboard } = useDashboardInfo();
+  const { in: recordsIn, out: recordsOut } = data?.records ?? {};
+
   const [chartType, setCharType] = useState<string>("out");
+  const { data: tag } = useTag({ tagId: selectedTag ?? "" });
 
-  const handleDelete = (recordId: string, recordType?: "in" | "out") => {
-    if (recordType === "in")
-      mutateIn((data) => data?.filter((r) => r._id !== recordId));
-    else if (recordType === "out")
-      mutateOut((data) => data?.filter((r) => r._id !== recordId));
-    else mutateTags((data) => data?.filter((t) => t._id !== recordId));
-
+  const handleDelete = (tagId?: string) => {
+    if (tagId) mutateTags((data) => data?.filter((t) => t._id !== tagId));
     mutateDashboard();
+  };
+
+  const handleTagSelection = (tagId: string) => {
+    if (selectedTag === tagId) {
+      setSelectedTag(undefined);
+      return;
+    }
+
+    setSelectedTag(tagId);
   };
 
   return (
@@ -132,6 +192,7 @@ const DashboardPage = () => {
                 </div>
               );
             })}
+            <h3>Selected Tag: {tag?.name || "ALL"}</h3>
           </section>
         </Card>
         <Card
@@ -144,14 +205,20 @@ const DashboardPage = () => {
           {chartType === "in" && (
             <>
               <h2>Incoming</h2>
-              <RecordsChart records={recordsIn ?? []} />
+              <RecordsChart
+                records={recordsIn ?? []}
+                onTagClick={handleTagSelection}
+              />
             </>
           )}
 
           {chartType === "out" && (
             <>
               <h2>Outgoing</h2>
-              <RecordsChart records={recordsOut ?? []} />
+              <RecordsChart
+                records={recordsOut ?? []}
+                onTagClick={handleTagSelection}
+              />
             </>
           )}
         </Card>
@@ -160,29 +227,21 @@ const DashboardPage = () => {
         <div>
           <h2>Incoming</h2>
           <ItemsLayout>
-            {recordsIn?.map((record) => {
-              return (
-                <RecordItem
-                  key={record._id}
-                  record={record}
-                  onDelete={() => handleDelete(record._id, record.type)}
-                />
-              );
-            })}
+            <RecordsSection
+              type="in"
+              onAction={() => handleDelete()}
+              tag={selectedTag}
+            />
           </ItemsLayout>
         </div>
         <div>
           <h2>Outgoing</h2>
           <ItemsLayout>
-            {recordsOut?.map((record) => {
-              return (
-                <RecordItem
-                  key={record._id}
-                  onDelete={() => handleDelete(record._id, record.type)}
-                  record={record}
-                />
-              );
-            })}
+            <RecordsSection
+              type="out"
+              onAction={() => handleDelete()}
+              tag={selectedTag}
+            />
           </ItemsLayout>
         </div>
         <div>
