@@ -24,7 +24,7 @@ const useIsOnViewPort = <T>({
   const previousObserver = useRef<IntersectionObserver | null>(null);
 
   const customRef = useCallback(
-    (node) => {
+    (node: any) => {
       if (previousObserver.current) {
         previousObserver?.current.disconnect();
         previousObserver.current = null;
