@@ -9,11 +9,15 @@ export type useRecords = {
   limit?: number;
   type?: "in" | "out" | "all";
   tag?: string;
+  from?: string;
+  to?: string;
 };
 
 const useRecords = ({
   limit = 10,
   type = "all",
+  from,
+  to,
   tag = undefined,
 }: useRecords = {}) => {
   const { sessionToken } = useAuthContext();
@@ -21,7 +25,7 @@ const useRecords = ({
     (page) =>
       sessionToken && [
         page,
-        `/in-out-records?page=${page}&limit=${limit}&type=${type}&tag=${tag}`,
+        `/in-out-records?page=${page}&limit=${limit}&type=${type}&tag=${tag}&from=${from}&to=${to}`,
       ],
     async ([page]) => {
       const params = new URLSearchParams({
@@ -30,6 +34,8 @@ const useRecords = ({
       });
       if (type !== "all") params.set("recordType", type);
       if (tag) params.set("tag", tag);
+      if (from) params.set("from", from);
+      if (to) params.set("to", to);
 
       const records = await manageSalaryFetcher<{
         records: (Record & { tag: Tag })[];

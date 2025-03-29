@@ -5,14 +5,25 @@ import { useAuthContext } from "../../context/AuthContext";
 import { manageSalaryFetcher } from "../../utils/fetchers";
 import { Record as RecordType } from "../../types/manageSalaryTypes/records";
 
-const useDashboardInfo = () => {
+type propsType = {
+  tag?: string;
+  from?: string;
+  to?: string;
+};
+
+const useDashboardInfo = ({ tag, from, to }: propsType = {}) => {
   const { sessionToken } = useAuthContext();
 
   return useSWR<{
     total: number;
     subTotal: Record<string, number>;
     records: Record<string, RecordType[]>;
-  }>("/dashboard-info", async () => {
+  }>(`/dashboard-info?tag${tag}&from=${from}&to=${to}`, async () => {
+    const params = new URLSearchParams({});
+    if (tag) params.set("tag", tag);
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
+
     const data = await manageSalaryFetcher<{
       total: string;
       records: {
@@ -20,7 +31,7 @@ const useDashboardInfo = () => {
         total: string;
         records: RecordType[];
       }[];
-    }>("/records/dashboard", {
+    }>(`/records/dashboard?${params.toString()}`, {
       headers: {
         Authorization: `Bearer ${sessionToken}`,
       },

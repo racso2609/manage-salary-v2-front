@@ -9,6 +9,10 @@ import { FC, useEffect, useMemo, useState } from "react";
 import useRecords from "../hooks/fetching/useRecords";
 import useIsOnViewPort from "../hooks/effects/useOnViewPort";
 import useTag from "../hooks/fetching/useTag";
+import useForm from "../hooks/forms/useForms";
+import { Input } from "../components/Inputs";
+import moment from "moment";
+import { formatDate } from "../utils/formatter/date";
 
 const Dashboard = styled.section`
   margin: auto;
@@ -85,12 +89,32 @@ const Header = styled.header`
   }
 `;
 
+const DateFilterSection = styled.section`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  & > * {
+    width: 100%;
+    max-width: 200px;
+  }
+
+  @media (max-width: 500px) {
+    & > * {
+      width: 100%;
+      max-width: unset;
+    }
+  }
+`;
+
 const RecordsSection: FC<{
   tag?: string;
   type: "in" | "out" | "all";
   limit?: number;
+  from?: string;
+  to?: string;
   onAction?: () => void;
-}> = ({ tag: tagId, type, limit = 5, onAction }) => {
+}> = ({ tag: tagId, from, to, type, limit = 5, onAction }) => {
   const {
     data,
     mutate: mutateRecords,
@@ -99,6 +123,8 @@ const RecordsSection: FC<{
     tag: tagId,
     limit,
     type,
+    from,
+    to,
   });
   const [ref, entry] = useIsOnViewPort<HTMLDivElement>();
 
@@ -137,7 +163,7 @@ const RecordsSection: FC<{
             />
           );
         })}
-        <div ref={ref} style={{ width: "100%", height: 5 }} />
+        <div ref={ref} style={{ width: "100%", height: 10 }}></div>
       </ItemsLayout>
     </div>
   );
@@ -145,9 +171,25 @@ const RecordsSection: FC<{
 
 const DashboardPage = () => {
   const [selectedTag, setSelectedTag] = useState<string | undefined>(undefined);
+  const dateInput = useForm<{
+    from: string;
+    to: string;
+  }>({
+    id: "date-filter",
+    defaultValue: {
+      from: "",
+      to: "",
+    },
+    type: "date",
+  });
+
   const { data: tags, mutate: mutateTags } = useTags();
 
-  const { data, mutate: mutateDashboard } = useDashboardInfo();
+  const { data, mutate: mutateDashboard } = useDashboardInfo({
+    tag: selectedTag,
+    from: dateInput.value.from,
+    to: dateInput.value.to,
+  });
   const { in: recordsIn, out: recordsOut } = data?.records ?? {};
 
   const [chartType, setCharType] = useState<string>("out");
@@ -167,6 +209,44 @@ const DashboardPage = () => {
     setSelectedTag(tagId);
   };
 
+  const handleDate = (date: string, type: "from" | "to") => {
+    console.log(date);
+    if (!date) {
+      dateInput.onChange({
+        target: {
+          value: {
+            from: "",
+            to: "",
+          },
+        },
+      });
+      return;
+    }
+    let from = moment(
+      new Date(type === "from" ? date : dateInput.value.from),
+    ).add(1, "day");
+
+    let to = moment(new Date(type === "to" ? date : dateInput.value.to)).add(
+      1,
+      "day",
+    );
+
+    if (from.isAfter(to) && to.isValid()) {
+      to = from.add(1, "week");
+    } else if (to.isBefore(from) && from.isValid()) {
+      from = to.subtract(1, "week");
+    }
+
+    dateInput.onChange({
+      target: {
+        value: {
+          from: from.isValid() ? formatDate(from.toDate()) : "",
+          to: to.isValid() ? formatDate(to.toDate()) : "",
+        },
+      },
+    });
+  };
+
   return (
     <Dashboard>
       <Header>
@@ -181,15 +261,22 @@ const DashboardPage = () => {
             <h2 data-profit={(data?.total || 0) > 0}> {data?.total} USD</h2>
           </section>
           <section>
-            {Object.keys(data?.subTotal ?? {}).map((type) => {
+            {Object.keys({
+              in: data?.subTotal.in,
+              out: data?.subTotal?.out,
+            }).map((type) => {
               return (
                 <div
                   className="subtotal-section"
-                  onClick={() => setCharType(type)}
+                  onClick={() => {
+                    if (data?.subTotal?.[type]) setCharType(type);
+                  }}
                   key={type}
                 >
                   <h3>{type}:</h3>
-                  <h3 data-profit={type === "in"}>{data?.subTotal[type]}</h3>
+                  <h3 data-profit={type === "in"}>
+                    {data?.subTotal?.[type] || 0}
+                  </h3>
                 </div>
               );
             })}
@@ -222,6 +309,21 @@ const DashboardPage = () => {
               />
             </>
           )}
+          <DateFilterSection>
+            <p>from date</p>
+            <Input
+              {...dateInput}
+              onChange={(e) => handleDate(e.target.value, "from")}
+              value={dateInput.value.from}
+            />
+
+            <p>to date</p>
+            <Input
+              {...dateInput}
+              onChange={(e) => handleDate(e.target.value, "to")}
+              value={dateInput.value.to}
+            />
+          </DateFilterSection>
         </Card>
       </Header>
       <ListsSection>
@@ -232,6 +334,8 @@ const DashboardPage = () => {
               type="in"
               onAction={() => handleDelete()}
               tag={selectedTag}
+              from={dateInput.value.from}
+              to={dateInput.value.to}
             />
           </ItemsLayout>
         </div>
@@ -242,6 +346,8 @@ const DashboardPage = () => {
               type="out"
               onAction={() => handleDelete()}
               tag={selectedTag}
+              from={dateInput.value.from}
+              to={dateInput.value.to}
             />
           </ItemsLayout>
         </div>

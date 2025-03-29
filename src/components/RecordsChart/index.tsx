@@ -12,6 +12,7 @@ const RecordsChart = ({ records, onTagClick }: RecordsChart) => {
     useState<HighlightItemData | null>(null);
 
   const formattedData = useMemo(() => {
+    setHighlightedItem(null);
     return records
       .map((value) => {
         return {
