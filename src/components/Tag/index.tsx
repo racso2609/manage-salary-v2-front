@@ -84,7 +84,7 @@ const TagItem: FC<TagItem> = ({
         {iconsSection}
       </TagComponent>
       {showInAndOuts && (
-        <section style={{ marginLeft: 25 }}>
+        <section>
           {tagInfo?.records?.map((record) => {
             return (
               <RecordItem
