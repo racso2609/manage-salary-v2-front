@@ -91,7 +91,19 @@ button:focus-visible {
 }
 
 .success-text {
-  background-color: green;
+  color: green;
+}
+
+.row{
+  display: flex;
+  flex-direction: row;
+  gap: 1em;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
 }
 
 

@@ -5,14 +5,14 @@ import RecordItem from "../components/Record";
 import { Card } from "../components/utils/card";
 import useDashboardInfo from "../hooks/fetching/useDashboardInfo";
 import RecordsChart from "../components/RecordsChart";
-import { FC, useEffect, useMemo, useState } from "react";
-import useRecords from "../hooks/fetching/useRecords";
-import useIsOnViewPort from "../hooks/effects/useOnViewPort";
+import { useMemo, useState } from "react";
 import useTag from "../hooks/fetching/useTag";
 import useForm from "../hooks/forms/useForms";
 import { Input } from "../components/Inputs";
 import moment from "moment";
 import { formatDate } from "../utils/formatter/date";
+import { formatNumber } from "../utils/formatter/numbers";
+import { Record } from "../types/manageSalaryTypes/records";
 
 const Dashboard = styled.section`
   margin: auto;
@@ -107,66 +107,46 @@ const DateFilterSection = styled.section`
   }
 `;
 
-const RecordsSection: FC<{
-  tag?: string;
-  type: "in" | "out" | "all";
-  limit?: number;
-  from?: string;
-  to?: string;
-  onAction?: () => void;
-}> = ({ tag: tagId, from, to, type, limit = 5, onAction }) => {
-  const {
-    data,
-    mutate: mutateRecords,
-    setSize: setPage,
-  } = useRecords({
-    tag: tagId,
-    limit,
-    type,
-    from,
-    to,
-  });
-  const [ref, entry] = useIsOnViewPort<HTMLDivElement>();
+const RecordsPerLabel = ({
+  records,
+}: {
+  records: { [key: string]: { records: Record[]; total: string | number } };
+}) => {
+  const [isOpenLabel, setIsOpenLabel] = useState<{ [key: string]: boolean }>(
+    {},
+  );
 
-  const isVisiable = useMemo(() => {
-    return entry?.isIntersecting;
-  }, [entry]);
-
-  const handleDelete = (recordId: string) => {
-    mutateRecords((data) => {
-      return data?.map((page) => {
-        return page.filter((record) => record._id !== recordId);
-      });
-    });
-    onAction?.();
+  const toggleLabel = (date: string) => {
+    setIsOpenLabel((prev) => ({
+      ...prev,
+      [date]: !prev[date],
+    }));
   };
 
-  useEffect(() => {
-    if (!isVisiable) return;
-    const shouldFetch =
-      data?.length === 0 || data?.[data.length - 1]?.length === limit;
-    if (!shouldFetch) return;
-
-    setPage((prev) => prev + 1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVisiable, data, limit]);
-
-  return (
-    <div>
-      <ItemsLayout>
-        {data?.flat()?.map((record) => {
-          return (
-            <RecordItem
-              key={record._id}
-              record={record}
-              onDelete={() => handleDelete(record._id)}
-            />
-          );
-        })}
-        <div ref={ref} style={{ width: "100%", height: 10 }}></div>
-      </ItemsLayout>
-    </div>
-  );
+  return Object.entries(records).map(([date, records]) => {
+    return (
+      <>
+        <Card
+          key={date}
+          style={{ marginBottom: "10px" }}
+          onClick={() => toggleLabel(date)}
+        >
+          <h3>{moment(date).format("MMMM YYYY")}</h3>
+          <p
+            className={
+              Number(records.total) > 0 ? "success-text" : "danger-text"
+            }
+          >
+            Total: {formatNumber(records.total)}
+          </p>
+        </Card>
+        {isOpenLabel[date] &&
+          records.records.map((record) => (
+            <RecordItem key={record._id} record={record} />
+          ))}
+      </>
+    );
+  });
 };
 
 const DashboardPage = () => {
@@ -190,7 +170,6 @@ const DashboardPage = () => {
     from: dateInput.value.from,
     to: dateInput.value.to,
   });
-  const { in: recordsIn, out: recordsOut } = data?.records ?? {};
 
   const [chartType, setCharType] = useState<string>("out");
   const { data: tag } = useTag({ tagId: selectedTag ?? "" });
@@ -247,6 +226,27 @@ const DashboardPage = () => {
     });
   };
 
+  const records = useMemo(() => {
+    const recordsList = Object.values(data?.records ?? {})
+      .flat()
+      .map((record) => record.records)
+      .flat();
+
+    return recordsList
+      .filter((record) => {
+        if (chartType === "in") return record.type === "in";
+        if (chartType === "out") return record.type === "out";
+        return true;
+      })
+      .filter((record) => {
+        // datefilter
+        return moment(record.createdAt).isBetween(
+          dateInput.value.from || 0,
+          dateInput.value.to || moment(),
+        );
+      });
+  }, [data, chartType, dateInput.value.from, dateInput.value.to]);
+
   return (
     <Dashboard>
       <Header>
@@ -258,7 +258,9 @@ const DashboardPage = () => {
         >
           <section className="total-section">
             <h2>TOTAL:</h2>
-            <h2 data-profit={(data?.total || 0) > 0}> {data?.total} USD</h2>
+            <h2 data-profit={(data?.total || 0) > 0}>
+              {formatNumber(data?.total)} USD
+            </h2>
           </section>
           <section>
             {Object.keys({
@@ -275,7 +277,7 @@ const DashboardPage = () => {
                 >
                   <h3>{type}:</h3>
                   <h3 data-profit={type === "in"}>
-                    {data?.subTotal?.[type] || 0}
+                    {formatNumber(data?.subTotal?.[type] || 0)}
                   </h3>
                 </div>
               );
@@ -290,25 +292,11 @@ const DashboardPage = () => {
           className="chart-section"
           padding="10px"
         >
-          {chartType === "in" && (
-            <>
-              <h2>Incoming</h2>
-              <RecordsChart
-                records={recordsIn ?? []}
-                onTagClick={handleTagSelection}
-              />
-            </>
-          )}
+          <>
+            <h2>{chartType === "in" ? "Incomming" : "Outgoing"}</h2>
+            <RecordsChart records={records} onTagClick={handleTagSelection} />
+          </>
 
-          {chartType === "out" && (
-            <>
-              <h2>Outgoing</h2>
-              <RecordsChart
-                records={recordsOut ?? []}
-                onTagClick={handleTagSelection}
-              />
-            </>
-          )}
           <DateFilterSection>
             <p>from date</p>
             <Input
@@ -328,31 +316,14 @@ const DashboardPage = () => {
       </Header>
       <ListsSection>
         <div>
-          <h2>Incoming</h2>
+          <h2>Records</h2>
           <ItemsLayout>
-            <RecordsSection
-              type="in"
-              onAction={() => handleDelete()}
-              tag={selectedTag}
-              from={dateInput.value.from}
-              to={dateInput.value.to}
-            />
-          </ItemsLayout>
-        </div>
-        <div>
-          <h2>Outgoing</h2>
-          <ItemsLayout>
-            <RecordsSection
-              type="out"
-              onAction={() => handleDelete()}
-              tag={selectedTag}
-              from={dateInput.value.from}
-              to={dateInput.value.to}
-            />
+            {<RecordsPerLabel records={data?.records ?? {}} />}
           </ItemsLayout>
         </div>
         <div>
           <h2>Tags</h2>
+
           <ItemsLayout>
             {tags?.map((tag) => {
               return (

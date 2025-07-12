@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useState } from "react";
 import { Tag } from "../../types/manageSalaryTypes/tags";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -7,6 +7,9 @@ import { DATE_FORMAT } from "../../constants/dates";
 import moment from "moment";
 import { Card } from "../utils/card";
 import useRemoveTag from "../../hooks/actions/useRemoveTag";
+import useTagInfo from "../../hooks/fetching/useTagInfo";
+import { formatNumber } from "../../utils/formatter/numbers";
+import RecordItem from "../Record";
 
 type TagItem = {
   tag: Tag;
@@ -58,15 +61,42 @@ const TagItem: FC<TagItem> = ({
   onDelete,
   iconsSection = <DefaultIconSection tag={tag} onDelete={onDelete} />,
 }) => {
-  return (
-    <TagComponent>
-      <div>
-        <h2>{tag.name}</h2>
-        <p>{moment(tag.createdAt).format(DATE_FORMAT)}</p>
-      </div>
+  const [showInAndOuts, setShowInAndOuts] = useState(false);
+  const { data: tagInfo } = useTagInfo({ tagId: tag._id });
 
-      {iconsSection}
-    </TagComponent>
+  return (
+    <>
+      <TagComponent onClick={() => setShowInAndOuts(!showInAndOuts)}>
+        <div>
+          <h2>{tag.name}</h2>
+
+          <p>{moment(tag.createdAt).format(DATE_FORMAT)}</p>
+          <div className="row">
+            <p className="success-text">
+              +{formatNumber(tagInfo?.inRecords?.total)}
+            </p>
+            <p className="danger-text">
+              -{formatNumber(tagInfo?.outRecords?.total)}
+            </p>
+          </div>
+        </div>
+
+        {iconsSection}
+      </TagComponent>
+      {showInAndOuts && (
+        <section style={{ marginLeft: 25 }}>
+          {tagInfo?.records?.map((record) => {
+            return (
+              <RecordItem
+                key={record._id}
+                record={record}
+                iconsSection={null}
+              />
+            );
+          })}
+        </section>
+      )}
+    </>
   );
 };
 
