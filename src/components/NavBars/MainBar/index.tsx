@@ -6,6 +6,7 @@ const locations = [
   { name: "Dashboard", id: "dashboard", href: "/dashboard" },
   { name: "Records", id: "records", href: "/in-out" },
   { name: "Tags", id: "tags", href: "/tags" },
+  { name: "Settings", id: "settings", href: "/settings" },
 ];
 
 const Nav = styled.nav`

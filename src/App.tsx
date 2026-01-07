@@ -6,6 +6,7 @@ import MainLayout from "./components/Layouts/main";
 import DashboardPage from "./pages/dashboard";
 import InOutPage from "./pages/in-out";
 import TagsPage from "./pages/tags";
+import SettingsPage from "./pages/settings";
 
 function App() {
   const { isLogged } = useAuthContext();
@@ -26,6 +27,7 @@ function App() {
             <Route index path="/dashboard" element={<DashboardPage />} />
             <Route path="/in-out" element={<InOutPage />} />
             <Route path="/tags" element={<TagsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="*" element={<Navigate replace to="/dashboard" />} />
           </Route>
         </>
