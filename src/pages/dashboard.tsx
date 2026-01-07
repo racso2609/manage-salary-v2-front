@@ -14,6 +14,8 @@ import { formatDate } from "../utils/formatter/date";
 import { formatNumber } from "../utils/formatter/numbers";
 import { Record } from "../types/manageSalaryTypes/records";
 import { CSVLink } from "react-csv";
+import RecordEditModal from "../components/RecordEditModal";
+import useUpdateRecord from "../hooks/actions/useUpdateRecord";
 
 const Dashboard = styled.section`
   margin: auto;
@@ -194,8 +196,12 @@ const RecentTransactions = ({
 
 const RecordsPerLabel = ({
   records,
+  onDelete,
+  onEdit,
 }: {
   records: { [key: string]: { records: Record[]; total: string | number } };
+  onDelete?: (recordId: string) => void;
+  onEdit?: (record: Record) => void;
 }) => {
   const [isOpenLabel, setIsOpenLabel] = useState<{ [key: string]: boolean }>(
     {},
@@ -227,7 +233,7 @@ const RecordsPerLabel = ({
         </Card>
         {isOpenLabel[date] &&
           records.records.map((record) => (
-            <RecordItem key={record._id} record={record} />
+            <RecordItem key={record._id} record={record} onDelete={onDelete} onEdit={onEdit} />
           ))}
       </>
     );
@@ -260,22 +266,48 @@ const DashboardPage = () => {
     to: dateInput.value.to,
   });
 
-  const [chartType, setCharType] = useState<string>("out");
-  const { data: tag } = useTag({ tagId: selectedTag ?? "" });
+const [chartType, setCharType] = useState<string>("out");
+const { data: tag } = useTag({ tagId: selectedTag ?? "" });
+
+const [editingRecord, setEditingRecord] = useState<Record | null>(null);
+const [editModalOpen, setEditModalOpen] = useState(false);
+
+const { handleUpdateRecord } = useUpdateRecord({
+  handlers: {
+    onSuccess: () => {
+      mutateDashboard();
+    },
+    onError: (err) => {
+      console.error(err);
+    },
+  },
+});
 
   const handleDelete = (tagId?: string) => {
     if (tagId) mutateTags((data) => data?.filter((t) => t._id !== tagId));
     mutateDashboard();
   };
 
-  const handleTagSelection = (tagId: string) => {
-    if (selectedTag === tagId) {
-      setSelectedTag(undefined);
-      return;
-    }
+const handleTagSelection = (tagId: string) => {
+  if (selectedTag === tagId) {
+    setSelectedTag(undefined);
+    return;
+  }
 
-    setSelectedTag(tagId);
-  };
+  setSelectedTag(tagId);
+};
+
+const handleEditRecord = (record: Record) => {
+  setEditingRecord(record);
+  setEditModalOpen(true);
+};
+
+const handleSaveEdit = (data: Partial<Omit<Record, "tag"> & { tag: string }>) => {
+  if (!editingRecord) return;
+  handleUpdateRecord(editingRecord._id, data);
+  setEditModalOpen(false);
+  setEditingRecord(null);
+};
 
   const handleDate = (date: string, type: "from" | "to") => {
     console.log(date);
@@ -503,7 +535,7 @@ const DashboardPage = () => {
         <div>
           <h2>Records</h2>
           <ItemsLayout>
-            {<RecordsPerLabel records={data?.records ?? {}} />}
+            {<RecordsPerLabel records={data?.records ?? {}} onDelete={handleDelete} onEdit={handleEditRecord} />}
           </ItemsLayout>
         </div>
         <div>
@@ -522,6 +554,12 @@ const DashboardPage = () => {
           </ItemsLayout>
         </div>
       </ListsSection>
+      <RecordEditModal
+        open={editModalOpen}
+        record={editingRecord}
+        onClose={() => setEditModalOpen(false)}
+        onSave={handleSaveEdit}
+      />
     </Dashboard>
   );
 };
