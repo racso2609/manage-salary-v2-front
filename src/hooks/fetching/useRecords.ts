@@ -49,6 +49,7 @@ const useRecords = ({
         return {
           ...a,
           amount: (Number(a.amount) / 100).toString(),
+          tag: a.tag ?? { name: "Untagged", color: "#808080" },
         };
       });
     },

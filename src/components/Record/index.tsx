@@ -2,7 +2,7 @@ import { FC, ReactNode } from "react";
 import { Record } from "../../types/manageSalaryTypes/records";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faEdit } from "@fortawesome/free-solid-svg-icons";
 import { DATE_FORMAT } from "../../constants/dates";
 import moment from "moment";
 import { Card } from "../utils/card";
@@ -11,17 +11,19 @@ import useRemoveRecord from "../../hooks/actions/useRemoveRecord";
 type RecordItem = {
   record: Record;
   onDelete?: (recordId: string) => void;
+  onEdit?: (record: Record) => void;
   iconsSection?: ReactNode;
 };
 
 const RecordComponent = styled(Card)`
   display: grid;
-  grid-template-columns: 1fr 25px;
+  grid-template-columns: 1fr 1fr;
 
   .record-icons {
     display: flex;
     gap: 10px;
     justify-content: end;
+    align-items: center;
   }
   p {
     margin: 5px 0;
@@ -68,9 +70,11 @@ const ActionButton = styled(FontAwesomeIcon)`
 const DefaultIconSection = ({
   record,
   onDelete,
+  onEdit,
 }: {
   record: Record;
   onDelete?: (recordId: string) => void;
+  onEdit?: (record: Record) => void;
 }) => {
   const { handleRemoveRecord } = useRemoveRecord({
     handlers: {
@@ -81,6 +85,11 @@ const DefaultIconSection = ({
   });
   return (
     <p className="record-icons">
+      <div className="tag bold">
+        <span>{record.tag.name}</span>
+      </div>
+
+      {onEdit && <ActionButton icon={faEdit} onClick={() => onEdit(record)} />}
       <ActionButton
         icon={faTrash}
         onClick={() => handleRemoveRecord(record._id)}
@@ -92,24 +101,24 @@ const DefaultIconSection = ({
 const RecordItem: FC<RecordItem> = ({
   record,
   onDelete,
-  iconsSection = <DefaultIconSection record={record} onDelete={onDelete} />,
+  onEdit,
+  iconsSection = (
+    <DefaultIconSection record={record} onDelete={onDelete} onEdit={onEdit} />
+  ),
 }) => {
   return (
     <RecordComponent>
-      <div>
+      <div style={{ flex: 1 }}>
         <div className="amount-and-tag">
           <h2 data-type={record.type} className="record-amount">
             {record.amount}
           </h2>
-          <div className="tag bold">
-            <span>{record.tag.name}</span>
-          </div>
         </div>
         <p>{record.description}</p>
         <p>{moment(record.date).format(DATE_FORMAT)}</p>
       </div>
 
-      {iconsSection}
+      <section style={{ flex: 1 }}>{iconsSection}</section>
     </RecordComponent>
   );
 };

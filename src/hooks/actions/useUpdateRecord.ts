@@ -2,6 +2,7 @@ import { FnHandlers } from "../../types/handlers";
 import { Record } from "../../types/manageSalaryTypes/records";
 import { manageSalaryFetcher } from "../../utils/fetchers";
 import { useAuthContext } from "../../context/AuthContext";
+import moment from "moment";
 
 export type useUpdateRecord = {
   handlers?: FnHandlers<undefined>;
@@ -30,7 +31,7 @@ const useUpdateRecord = ({ handlers }: useUpdateRecord = {}) => {
         updateData.amount = (Number(data.amount) * 100).toString();
       }
       if (data.date !== undefined) {
-        updateData.date = new Date(data.date).toISOString();
+        updateData.date = moment.utc(data.date, 'YYYY-MM-DD').toISOString();
       }
 
       await manageSalaryFetcher(`/records/${recordId}`, {

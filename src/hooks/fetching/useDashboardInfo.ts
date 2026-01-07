@@ -57,7 +57,8 @@ const useDashboardInfo = ({ tag, from, to }: propsType = {}) => {
           records: record.records.map((r) => ({
             ...r,
             amount: formatBnNumber(r.amount),
-            date: moment(r.date).format("YYYY-MM-DD"),
+            date: moment(r.date).utc().format("YYYY-MM-DD"),
+            tag: r.tag || { name: "Untagged", color: "#808080" },
           })),
           total: formatBnNumber(record.total),
         };

@@ -232,7 +232,7 @@ const LoginPage: FC = () => {
           </InputWrapper>
         </LoginInputs>
         {error && <ErrorMessage>{error}</ErrorMessage>}
-        <StyledButton type="submit" disabled={loading}>
+        <StyledButton type="submit" disabled={loading} onClick={handleSubmit}>
           {loading ? "Loading..." : type === "login" ? "Login" : "Sign Up"}
         </StyledButton>
       </LoginForm>

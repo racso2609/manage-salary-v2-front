@@ -2,6 +2,7 @@ import { FnHandlers } from "../../types/handlers";
 import { Record } from "../../types/manageSalaryTypes/records";
 import { manageSalaryFetcher } from "../../utils/fetchers";
 import { useAuthContext } from "../../context/AuthContext";
+import moment from "moment";
 
 export type useCreateRecord = {
   handlers?: FnHandlers<undefined>;
@@ -32,7 +33,7 @@ const useCreateRecord = ({ handlers }: useCreateRecord = {}) => {
         body: {
           ...data,
           amount: (Number(data.amount) * 100).toString(),
-          date: new Date(data.date).toISOString(),
+          date: moment.utc(data.date, 'YYYY-MM-DD').toISOString(),
         },
         headers: {
           Authorization: `Bearer ${sessionToken}`,

@@ -11,6 +11,7 @@ import {
   FormControl,
   InputLabel,
 } from "@mui/material";
+import moment from "moment";
 import { Record } from "../types/manageSalaryTypes/records";
 import useTags from "../hooks/fetching/useTags";
 
@@ -41,8 +42,8 @@ const RecordEditModal: React.FC<RecordEditModalProps> = ({
       setFormData({
         type: record.type,
         description: record.description,
-        amount: (Number(record.amount) / 100).toString(),
-        date: new Date(record.date).toISOString().split("T")[0],
+        amount: Number(record.amount).toString(),
+          date: moment(record.date).utc().format("YYYY-MM-DD"),
         tag: record.tag._id,
       });
     }
@@ -76,7 +77,9 @@ const RecordEditModal: React.FC<RecordEditModalProps> = ({
           <InputLabel>Type</InputLabel>
           <Select
             value={formData.type}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value as "in" | "out" })}
+            onChange={(e) =>
+              setFormData({ ...formData, type: e.target.value as "in" | "out" })
+            }
           >
             <MenuItem value="in">In</MenuItem>
             <MenuItem value="out">Out</MenuItem>
@@ -87,7 +90,9 @@ const RecordEditModal: React.FC<RecordEditModalProps> = ({
           margin="dense"
           label="Description"
           value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, description: e.target.value })
+          }
         />
         <TextField
           fullWidth
@@ -131,3 +136,4 @@ const RecordEditModal: React.FC<RecordEditModalProps> = ({
 };
 
 export default RecordEditModal;
+
