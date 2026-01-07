@@ -1,5 +1,6 @@
 // import { redirect } from "react-router";
 import { API_URL } from "../../constants/urls";
+import { safeParse } from "../formatter/json";
 // import { SESSION_TOKEN_KEY } from "../../stores/auth";
 
 class FetcherError extends Error {
@@ -30,7 +31,18 @@ export const fetcher = async <T>(
     body: JSON.stringify(options.body),
   });
 
-  if (!res?.ok) throw new FetcherError(`Error fetching: ${url}`, res.status);
+  if (!res?.ok) {
+    const text = await res.clone().text();
+    const jsonParsed = safeParse<{ message: string }>(text, null);
+
+    if (jsonParsed)
+      throw new FetcherError(
+        `Error fetching: ${jsonParsed.message}`,
+        res.status,
+      );
+
+    throw new FetcherError(`Error fetching: ${url}`, res.status);
+  }
 
   return res.json();
 };

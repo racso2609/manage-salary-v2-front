@@ -106,7 +106,7 @@ const RecordItem: FC<RecordItem> = ({
           </div>
         </div>
         <p>{record.description}</p>
-        <p>{moment(record.createdAt).format(DATE_FORMAT)}</p>
+        <p>{moment(record.date).format(DATE_FORMAT)}</p>
       </div>
 
       {iconsSection}

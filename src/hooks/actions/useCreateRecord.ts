@@ -18,7 +18,7 @@ const useCreateRecord = ({ handlers }: useCreateRecord = {}) => {
   };
 
   const handleCreateRecord = async (
-    data: Omit<Record, "tag" | "_id" | "createdAt"> & { tag: string },
+    data: Omit<Record, "tag" | "_id"> & { tag: string },
   ) => {
     try {
       if (!Number(data.amount)) throw new Error("Invalid amount");

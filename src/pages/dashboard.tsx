@@ -157,8 +157,8 @@ const DashboardPage = () => {
   }>({
     id: "date-filter",
     defaultValue: {
-      from: "",
-      to: "",
+      from: moment().startOf('year').format('YYYY-MM-DD'),
+      to: moment().endOf('year').format('YYYY-MM-DD'),
     },
     type: "date",
   });
@@ -240,7 +240,7 @@ const DashboardPage = () => {
       })
       .filter((record) => {
         // datefilter
-        return moment(record.createdAt).isBetween(
+        return moment(record.date).isBetween(
           dateInput.value.from || 0,
           dateInput.value.to || moment(),
         );

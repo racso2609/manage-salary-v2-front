@@ -7,5 +7,5 @@ export type Record = {
   amount: string | number;
   tag: Tag;
   currency: "USD";
-  createdAt: string;
+   date: string;
 };

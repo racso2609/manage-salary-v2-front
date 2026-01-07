@@ -39,6 +39,13 @@ const InOutPage = () => {
     required: true,
   });
 
+  const dateInput = useForm({
+    defaultValue: "",
+    type: "date",
+    id: "date",
+    placeholder: "Record date",
+  });
+
   const tagInput = useForm({
     defaultValue: "",
     type: "text",
@@ -51,6 +58,7 @@ const InOutPage = () => {
     tagInput.onChange({ target: { value: "" } });
     descriptionInput.onChange({ target: { value: "" } });
     amountInput.onChange({ target: { value: "" } });
+    dateInput.onChange({ target: { value: "" } });
     typeInput.onChange({ target: { value: "" } });
   };
 
@@ -75,6 +83,7 @@ const InOutPage = () => {
       type: typeInput.value as "in" | "out",
       amount: amountInput.value,
       description: descriptionInput.value,
+      date: dateInput.value,
       tag: tagInput.value,
       currency: "USD",
     });
@@ -92,8 +101,9 @@ const InOutPage = () => {
         <option value="out">Out</option>
       </Select>
       <Input {...descriptionInput} />
-      <Input {...amountInput} />
-      <Select {...tagInput}>
+       <Input {...amountInput} />
+       <Input {...dateInput} />
+       <Select {...tagInput}>
         <option>Select a tag to categories your records</option>
         {tags?.data?.map((tag) => {
           return (
