@@ -13,6 +13,7 @@ import moment from "moment";
 import { formatDate } from "../utils/formatter/date";
 import { formatNumber } from "../utils/formatter/numbers";
 import { Record } from "../types/manageSalaryTypes/records";
+import { CSVLink } from 'react-csv';
 
 const Dashboard = styled.section`
   margin: auto;
@@ -113,12 +114,49 @@ const DateFilterSection = styled.section`
   }
 `;
 
-const TopCategories = ({ topCategories, onTagClick }: { topCategories: Array<{ tag: any; total: number }>; onTagClick: (tagId: string) => void }) => (
+const AlertBanner = ({
+  alerts,
+}: {
+  alerts: Array<{ type: string; message: string }>;
+}) =>
+  alerts.length > 0 && (
+    <div style={{ marginBottom: "10px" }}>
+      {alerts.map((alert, index) => (
+        <Card
+          key={index}
+          background={alert.type === "warning" ? "#fff3cd" : "#f8d7da"}
+          radius="10px"
+          padding="10px"
+        >
+          <p
+            style={{
+              margin: 0,
+              color: alert.type === "warning" ? "#856404" : "#721c24",
+            }}
+          >
+            {alert.message}
+          </p>
+        </Card>
+      ))}
+    </div>
+  );
+
+const TopCategories = ({
+  topCategories,
+  onTagClick,
+}: {
+  topCategories: Array<{ tag: any; total: number }>;
+  onTagClick: (tagId: string) => void;
+}) => (
   <Card background="gray" width="100%" radius="10px">
     <h3>Top Spending Categories</h3>
-    <ul style={{ listStyle: 'none', padding: 0 }}>
+    <ul style={{ listStyle: "none", padding: 0 }}>
       {topCategories.map(({ tag, total }) => (
-        <li key={tag._id} onClick={() => onTagClick(tag._id)} style={{ cursor: 'pointer', marginBottom: '5px' }}>
+        <li
+          key={tag._id}
+          onClick={() => onTagClick(tag._id)}
+          style={{ cursor: "pointer", marginBottom: "5px" }}
+        >
           {tag.name}: {formatNumber(total)} USD
         </li>
       ))}
@@ -126,13 +164,27 @@ const TopCategories = ({ topCategories, onTagClick }: { topCategories: Array<{ t
   </Card>
 );
 
-const RecentTransactions = ({ recentTransactions }: { recentTransactions: Record[] }) => (
+const RecentTransactions = ({
+  recentTransactions,
+}: {
+  recentTransactions: Record[];
+}) => (
   <Card background="gray" width="100%" radius="10px">
     <h3>Recent Transactions</h3>
-    <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+    <div style={{ maxHeight: "200px", overflowY: "auto" }}>
       {recentTransactions.map((record) => (
-        <div key={record._id} style={{ marginBottom: '10px', borderBottom: '1px solid #ccc', paddingBottom: '5px' }}>
-          <p style={{ margin: 0 }}>{record.description} - {formatNumber(record.amount)} USD ({record.type})</p>
+        <div
+          key={record._id}
+          style={{
+            marginBottom: "10px",
+            borderBottom: "1px solid #ccc",
+            paddingBottom: "5px",
+          }}
+        >
+          <p style={{ margin: 0 }}>
+            {record.description} - {formatNumber(record.amount)} USD (
+            {record.type})
+          </p>
           <small>{formatDate(new Date(record.date))}</small>
         </div>
       ))}
@@ -190,15 +242,19 @@ const DashboardPage = () => {
   }>({
     id: "date-filter",
     defaultValue: {
-      from: moment().startOf('year').format('YYYY-MM-DD'),
-      to: moment().endOf('year').format('YYYY-MM-DD'),
+      from: moment().startOf("year").format("YYYY-MM-DD"),
+      to: moment().endOf("year").format("YYYY-MM-DD"),
     },
     type: "date",
   });
 
   const { data: tags, mutate: mutateTags } = useTags();
 
-  const { data, previousBalance, mutate: mutateDashboard } = useDashboardInfo({
+  const {
+    data,
+    previousBalance,
+    mutate: mutateDashboard,
+  } = useDashboardInfo({
     tag: selectedTag,
     from: dateInput.value.from,
     to: dateInput.value.to,
@@ -266,28 +322,44 @@ const DashboardPage = () => {
     const outflowByTag: { [key: string]: number } = {};
     Object.values(data.records).forEach((month) => {
       month.records.forEach((record) => {
-        if (record.type === 'out') {
-          outflowByTag[record.tag._id] = (outflowByTag[record.tag._id] || 0) + Number(record.amount);
+        if (record.type === "out") {
+          outflowByTag[record.tag._id] =
+            (outflowByTag[record.tag._id] || 0) + Number(record.amount);
         }
       });
     });
     return Object.entries(outflowByTag)
       .map(([tagId, total]) => {
-        const tag = tags.find(t => t._id === tagId);
+        const tag = tags.find((t) => t._id === tagId);
         return { tag, total };
       })
-      .filter(item => item.tag)
+      .filter((item) => item.tag)
       .sort((a, b) => b.total - a.total)
       .slice(0, 5);
   }, [data, tags]);
 
   const recentTransactions = useMemo(() => {
     if (!data?.records) return [];
-    const allRecords = Object.values(data.records).flatMap(month => month.records);
+    const allRecords = Object.values(data.records).flatMap(
+      (month) => month.records,
+    );
     return allRecords
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 10);
   }, [data]);
+
+  const alerts = useMemo(() => {
+    const alertList: Array<{ type: string; message: string }> = [];
+    const lowBalanceThreshold = parseFloat(localStorage.getItem('lowBalanceThreshold') || '500');
+    const highSpendingThreshold = parseFloat(localStorage.getItem('highSpendingThreshold') || '2000');
+    if (accountBalance < lowBalanceThreshold) {
+      alertList.push({ type: 'warning', message: `Low Balance: Below $${lowBalanceThreshold}` });
+    }
+    if ((data?.subTotal?.out || 0) > highSpendingThreshold) {
+      alertList.push({ type: 'danger', message: `High Spending: Over $${highSpendingThreshold} this period` });
+    }
+    return alertList;
+  }, [accountBalance, data]);
 
   const records = useMemo(() => {
     const recordsList = Object.values(data?.records ?? {})
@@ -310,8 +382,21 @@ const DashboardPage = () => {
       });
   }, [data, chartType, dateInput.value.from, dateInput.value.to]);
 
+  const csvData = useMemo(() => {
+    const headers = ['Date', 'Type', 'Description', 'Amount', 'Tag'];
+    const rows = records.map(record => [
+      record.date,
+      record.type,
+      record.description,
+      record.amount,
+      record.tag.name
+    ]);
+    return [headers, ...rows];
+  }, [records]);
+
   return (
     <Dashboard>
+      <AlertBanner alerts={alerts} />
       <Header>
         <Card
           background="gray"
@@ -379,6 +464,13 @@ const DashboardPage = () => {
         <div className="summary-section">
           <TopCategories topCategories={topCategories} onTagClick={handleTagSelection} />
           <RecentTransactions recentTransactions={recentTransactions} />
+          <Card background="gray" width="100%" radius="10px" padding="10px">
+            <CSVLink data={csvData} filename="records.csv" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <button style={{ width: '100%', padding: '10px', background: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+                Export Records to CSV
+              </button>
+            </CSVLink>
+          </Card>
         </div>
       </Header>
       <ListsSection>
