@@ -65,7 +65,7 @@ const InOutPage = () => {
   const { handleCreateRecord } = useCreateRecord({
     handlers: {
       onSuccess: () => {
-        cleanData();
+        // cleanData();
         temporalState.setState({ text: "Record created", class: "success" });
       },
       onError: (e: any) => {
@@ -79,6 +79,8 @@ const InOutPage = () => {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
+    console.log("Submitting form", dateInput.value);
+    // return;
     handleCreateRecord({
       type: typeInput.value as "in" | "out",
       amount: amountInput.value,
@@ -101,9 +103,9 @@ const InOutPage = () => {
         <option value="out">Out</option>
       </Select>
       <Input {...descriptionInput} />
-       <Input {...amountInput} />
-       <Input {...dateInput} />
-       <Select {...tagInput}>
+      <Input {...amountInput} />
+      <Input {...dateInput} />
+      <Select {...tagInput}>
         <option>Select a tag to categories your records</option>
         {tags?.data?.map((tag) => {
           return (

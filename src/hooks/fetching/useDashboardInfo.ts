@@ -5,6 +5,7 @@ import { useAuthContext } from "../../context/AuthContext";
 import { manageSalaryFetcher } from "../../utils/fetchers";
 import { Record as RecordType } from "../../types/manageSalaryTypes/records";
 import { formatBnNumber } from "../../utils/formatter/numbers";
+import moment from "moment";
 
 type propsType = {
   tag?: string;
@@ -15,7 +16,7 @@ type propsType = {
 const useDashboardInfo = ({ tag, from, to }: propsType = {}) => {
   const { sessionToken } = useAuthContext();
 
-  return useSWR<{
+  const { data, mutate } = useSWR<{
     total: number;
     subTotal: Record<string, number>;
     records: Record<
@@ -46,8 +47,6 @@ const useDashboardInfo = ({ tag, from, to }: propsType = {}) => {
       },
     });
 
-    console.log("=== data", data);
-
     const total = formatBnNumber(data.total);
     const totalIn = formatBnNumber(data.totalIn);
     const totalOut = formatBnNumber(data.totalOut);
@@ -58,6 +57,7 @@ const useDashboardInfo = ({ tag, from, to }: propsType = {}) => {
           records: record.records.map((r) => ({
             ...r,
             amount: formatBnNumber(r.amount),
+            date: moment(r.date).format("YYYY-MM-DD"),
           })),
           total: formatBnNumber(record.total),
         };
@@ -66,11 +66,6 @@ const useDashboardInfo = ({ tag, from, to }: propsType = {}) => {
       },
       {} as Record<string, { records: RecordType[]; total: string | number }>,
     );
-
-    // const inRecords =
-    // data.records.find((record) => record._id === "in")?.records ?? [];
-    // const outRecords =
-    // data.records.find((record) => record._id === "out")?.records ?? [];
 
     return {
       total,
@@ -81,6 +76,37 @@ const useDashboardInfo = ({ tag, from, to }: propsType = {}) => {
       },
     };
   });
+
+  const { data: previousBalanceData } = useSWR<{ total: number }>(
+    `/dashboard-info-previous?tag${tag}`,
+    async () => {
+      const params = new URLSearchParams({});
+      if (tag) params.set("tag", tag);
+      params.set("from", "1900-01-01");
+      params.set(
+        "to",
+        moment().startOf("year").subtract(1, "day").format("YYYY-MM-DD"),
+      );
+
+      const data = await manageSalaryFetcher<{
+        total: string;
+      }>(`/records/dashboard?${params.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${sessionToken}`,
+        },
+      });
+
+      return {
+        total: formatBnNumber(data.total),
+      };
+    },
+  );
+
+  return {
+    data,
+    previousBalance: previousBalanceData?.total || 0,
+    mutate,
+  };
 };
 
 export default useDashboardInfo;

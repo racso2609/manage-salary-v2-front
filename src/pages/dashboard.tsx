@@ -47,7 +47,7 @@ const ListsSection = styled.section`
 
 const Header = styled.header`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   padding: 10px 0px;
   gap: 20px;
 
@@ -87,6 +87,12 @@ const Header = styled.header`
   .chart-section {
     // display: flex;
   }
+
+  .summary-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
 `;
 
 const DateFilterSection = styled.section`
@@ -106,6 +112,33 @@ const DateFilterSection = styled.section`
     }
   }
 `;
+
+const TopCategories = ({ topCategories, onTagClick }: { topCategories: Array<{ tag: any; total: number }>; onTagClick: (tagId: string) => void }) => (
+  <Card background="gray" width="100%" radius="10px">
+    <h3>Top Spending Categories</h3>
+    <ul style={{ listStyle: 'none', padding: 0 }}>
+      {topCategories.map(({ tag, total }) => (
+        <li key={tag._id} onClick={() => onTagClick(tag._id)} style={{ cursor: 'pointer', marginBottom: '5px' }}>
+          {tag.name}: {formatNumber(total)} USD
+        </li>
+      ))}
+    </ul>
+  </Card>
+);
+
+const RecentTransactions = ({ recentTransactions }: { recentTransactions: Record[] }) => (
+  <Card background="gray" width="100%" radius="10px">
+    <h3>Recent Transactions</h3>
+    <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+      {recentTransactions.map((record) => (
+        <div key={record._id} style={{ marginBottom: '10px', borderBottom: '1px solid #ccc', paddingBottom: '5px' }}>
+          <p style={{ margin: 0 }}>{record.description} - {formatNumber(record.amount)} USD ({record.type})</p>
+          <small>{formatDate(new Date(record.date))}</small>
+        </div>
+      ))}
+    </div>
+  </Card>
+);
 
 const RecordsPerLabel = ({
   records,
@@ -165,7 +198,7 @@ const DashboardPage = () => {
 
   const { data: tags, mutate: mutateTags } = useTags();
 
-  const { data, mutate: mutateDashboard } = useDashboardInfo({
+  const { data, previousBalance, mutate: mutateDashboard } = useDashboardInfo({
     tag: selectedTag,
     from: dateInput.value.from,
     to: dateInput.value.to,
@@ -226,6 +259,36 @@ const DashboardPage = () => {
     });
   };
 
+  const accountBalance = (previousBalance || 0) + (data?.total || 0);
+
+  const topCategories = useMemo(() => {
+    if (!data?.records || !tags) return [];
+    const outflowByTag: { [key: string]: number } = {};
+    Object.values(data.records).forEach((month) => {
+      month.records.forEach((record) => {
+        if (record.type === 'out') {
+          outflowByTag[record.tag._id] = (outflowByTag[record.tag._id] || 0) + Number(record.amount);
+        }
+      });
+    });
+    return Object.entries(outflowByTag)
+      .map(([tagId, total]) => {
+        const tag = tags.find(t => t._id === tagId);
+        return { tag, total };
+      })
+      .filter(item => item.tag)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5);
+  }, [data, tags]);
+
+  const recentTransactions = useMemo(() => {
+    if (!data?.records) return [];
+    const allRecords = Object.values(data.records).flatMap(month => month.records);
+    return allRecords
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 10);
+  }, [data]);
+
   const records = useMemo(() => {
     const recordsList = Object.values(data?.records ?? {})
       .flat()
@@ -257,9 +320,9 @@ const DashboardPage = () => {
           className="total-container"
         >
           <section className="total-section">
-            <h2>TOTAL:</h2>
-            <h2 data-profit={(data?.total || 0) > 0}>
-              {formatNumber(data?.total)} USD
+            <h2>Account Balance:</h2>
+            <h2 data-profit={accountBalance > 0}>
+              {formatNumber(accountBalance)} USD
             </h2>
           </section>
           <section>
@@ -313,6 +376,10 @@ const DashboardPage = () => {
             />
           </DateFilterSection>
         </Card>
+        <div className="summary-section">
+          <TopCategories topCategories={topCategories} onTagClick={handleTagSelection} />
+          <RecentTransactions recentTransactions={recentTransactions} />
+        </div>
       </Header>
       <ListsSection>
         <div>

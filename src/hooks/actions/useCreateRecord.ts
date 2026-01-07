@@ -32,6 +32,7 @@ const useCreateRecord = ({ handlers }: useCreateRecord = {}) => {
         body: {
           ...data,
           amount: (Number(data.amount) * 100).toString(),
+          date: new Date(data.date).toISOString(),
         },
         headers: {
           Authorization: `Bearer ${sessionToken}`,
