@@ -57,8 +57,6 @@ const ListsSection = styled.section`
   justify-content: space-around;
 `;
 
-
-
 const AlertBanner = ({
   alerts,
 }: {
@@ -260,16 +258,18 @@ const DashboardPage = () => {
     setEditingRecord(null);
   };
 
-
-
-  const accountBalance = useMemo(() => {
-    // If no date filter is applied (All Time), use the total directly
-    // If date filter is applied, add previous balance to show balance up to that point
+  const currentYearBalance = useMemo(() => {
+    // Current year balance (with date filters applied)
     const hasDateFilter = dateInput.value.from || dateInput.value.to;
     return hasDateFilter
       ? (previousBalance || 0) + (data?.total || 0)
       : (data?.total || 0);
   }, [dateInput.value.from, dateInput.value.to, previousBalance, data?.total]);
+
+  const allTimeBalance = useMemo(() => {
+    // All time balance (complete historical balance)
+    return (previousBalance || 0) + (data?.total || 0);
+  }, [previousBalance, data?.total]);
 
   const topCategories = useMemo(() => {
     if (!data?.records || !tags) return [];
@@ -310,7 +310,7 @@ const DashboardPage = () => {
     const highSpendingThreshold = parseFloat(
       localStorage.getItem("highSpendingThreshold") || "2000",
     );
-    if (accountBalance < lowBalanceThreshold) {
+    if (currentYearBalance < lowBalanceThreshold) {
       alertList.push({
         type: "warning",
         message: `Low Balance: Below $${lowBalanceThreshold}`,
@@ -323,7 +323,7 @@ const DashboardPage = () => {
       });
     }
     return alertList;
-  }, [accountBalance, data]);
+  }, [currentYearBalance, data]);
 
   const records = useMemo(() => {
     const recordsList = Object.values(data?.records ?? {})
@@ -343,8 +343,8 @@ const DashboardPage = () => {
           return true;
         }
         return moment(record.date).isBetween(
-          dateInput.value.from || moment().subtract(100, 'years'),
-          dateInput.value.to || moment().add(100, 'years'),
+          dateInput.value.from || moment().subtract(100, "years"),
+          dateInput.value.to || moment().add(100, "years"),
         );
       });
   }, [data, chartType, dateInput.value.from, dateInput.value.to]);
@@ -366,7 +366,8 @@ const DashboardPage = () => {
       <AlertBanner alerts={alerts} />
       <Header>
         <TotalContainer
-          accountBalance={accountBalance}
+          currentYearBalance={currentYearBalance}
+      allTimeBalance={allTimeBalance}
           data={data}
           tag={tag}
           onChartTypeChange={setCharType}

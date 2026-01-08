@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from "react";
+import React, { memo, useMemo, useState } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -8,6 +8,9 @@ import {
   faChartLine,
   faPercent,
   faCalendarDay,
+  faToggleOn,
+  faToggleOff,
+  faCoins
 } from "@fortawesome/free-solid-svg-icons";
 import { Card } from "../utils/card";
 import { formatNumber } from "../../utils/formatter/numbers";
@@ -91,12 +94,61 @@ const Header = styled.header`
       .balance-content {
         text-align: center;
 
-        .balance-label {
-          font-size: 16px;
-          color: ${({ theme }) => theme.colors.textSecondary};
-          margin: 0 0 8px 0;
-          font-weight: 500;
+        .balance-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 8px;
+
+          .balance-label {
+            font-size: 16px;
+            color: ${({ theme }) => theme.colors.textSecondary};
+            margin: 0;
+          }
+
+          .balance-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border: 1px solid ${({ theme }) => theme.colors.border};
+            border-radius: 16px;
+            background: ${({ theme }) => theme.colors.surface};
+            color: ${({ theme }) => theme.colors.textSecondary};
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background: ${({ theme }) => theme.colors.primary}10;
+              border-color: ${({ theme }) => theme.colors.primary};
+              color: ${({ theme }) => theme.colors.primary};
+            }
+
+            .toggle-text {
+              font-weight: 500;
+            }
+          }
         }
+
+        .balance-amount {
+          font-size: 32px;
+          font-weight: 700;
+          margin: 0 0 4px 0;
+          color: ${({ theme }) => theme.colors.text};
+        }
+
+        .balance-subtitle {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          font-size: 12px;
+          color: ${({ theme }) => theme.colors.textSecondary};
+          margin: 0;
+          opacity: 0.8;
+        }
+      }
 
         .balance-amount {
           font-size: 32px;
@@ -513,7 +565,8 @@ const Header = styled.header`
 `;
 
 interface TotalContainerProps {
-  accountBalance: number;
+  currentYearBalance: number;
+  allTimeBalance: number;
   data?: {
     subTotal: {
       in?: number;
@@ -533,13 +586,16 @@ interface TotalContainerProps {
 
 const TotalContainer = memo(
   ({
-    accountBalance,
+    currentYearBalance,
+    allTimeBalance,
     data,
     tag,
     onChartTypeChange,
     isLoading,
     dateRange,
   }: TotalContainerProps) => {
+    const [showAllTimeBalance, setShowAllTimeBalance] = useState(false);
+
     // Memoize expensive calculations
     const metrics = useMemo(() => {
       const income = data?.subTotal?.in || 0;
@@ -580,17 +636,37 @@ const TotalContainer = memo(
           radius="10px"
           className="total-container"
         >
-          <div className="balance-section">
-            <div className="icon-container">
-              <FontAwesomeIcon icon={faWallet} />
-            </div>
-            <div className="balance-content">
-              <p className="balance-label">Current Balance</p>
-              <h2 className="balance-amount" data-profit={accountBalance > 0}>
-                {formatNumber(accountBalance)} USD
-              </h2>
-            </div>
+      <div className="balance-section">
+          <div className="icon-container">
+            <FontAwesomeIcon icon={faWallet} />
           </div>
+          <div className="balance-content">
+            <div className="balance-header">
+              <p className="balance-label">
+                {showAllTimeBalance ? 'All Time Balance' : 'Current Year Balance'}
+              </p>
+              <button
+                className="balance-toggle"
+                onClick={() => setShowAllTimeBalance(!showAllTimeBalance)}
+                title={`Switch to ${showAllTimeBalance ? 'current year' : 'all time'} balance`}
+              >
+                <FontAwesomeIcon icon={showAllTimeBalance ? faToggleOn : faToggleOff} />
+                <span className="toggle-text">
+                  {showAllTimeBalance ? 'All Time' : 'This Year'}
+                </span>
+              </button>
+            </div>
+            <h2 className="balance-amount" data-profit={(showAllTimeBalance ? allTimeBalance : currentYearBalance) > 0}>
+              {formatNumber(showAllTimeBalance ? allTimeBalance : currentYearBalance)} USD
+            </h2>
+            {showAllTimeBalance && (
+              <p className="balance-subtitle">
+                <FontAwesomeIcon icon={faCoins} />
+                Complete financial balance
+              </p>
+            )}
+          </div>
+        </div>
 
           <div className="flow-section">
             <div className="flow-header">
