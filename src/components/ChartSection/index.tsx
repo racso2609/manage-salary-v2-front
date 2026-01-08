@@ -282,21 +282,21 @@ const ChartSection = memo(
       onRefresh?.();
     };
 
-  const handleItemClick = (item: any) => {
-    if (item?.dataIndex !== undefined && formattedData[item.dataIndex]) {
-      const clickedItem = formattedData[item.dataIndex];
-      const tagId = clickedItem.id;
+    const handleItemClick = (item: any) => {
+      if (item?.dataIndex !== undefined && formattedData[item.dataIndex]) {
+        const clickedItem = formattedData[item.dataIndex];
+        const tagId = clickedItem.id;
 
-      // Toggle selection - if same tag is clicked, clear selection
-      if (selectedItem?.id === tagId) {
-        setSelectedItem(null);
-        onTagClick?.(""); // Clear the filter
-      } else {
-        setSelectedItem(clickedItem);
-        onTagClick?.(tagId);
+        // Toggle selection - if same tag is clicked, clear selection
+        if (selectedItem?.id === tagId) {
+          setSelectedItem(null);
+          onTagClick?.(""); // Clear the filter
+        } else {
+          setSelectedItem(clickedItem);
+          onTagClick?.(tagId);
+        }
       }
-    }
-  };
+    };
 
     return (
       <ChartSectionContainer>
@@ -347,7 +347,6 @@ const ChartSection = memo(
               {selectedChartType === "pie" ? (
                 <PieChart
                   height={250}
-                  hideLegend
                   series={[
                     {
                       data: formattedData,
@@ -358,6 +357,12 @@ const ChartSection = memo(
                     },
                   ]}
                   onItemClick={(_, item) => handleItemClick(item)}
+                  sx={{
+                    '& .MuiChartsLegend-label': {
+                      fill: 'rgba(255, 255, 255, 0.87) !important',
+                      fontSize: '12px !important',
+                    },
+                  }}
                 />
               ) : (
                 <BarChart
@@ -366,15 +371,41 @@ const ChartSection = memo(
                     {
                       data: formattedData.map((item) => item.label),
                       scaleType: "band",
+                      tickLabelStyle: {
+                        fill: 'rgba(255, 255, 255, 0.87)',
+                        fontSize: 12,
+                      },
+                    },
+                  ]}
+                  yAxis={[
+                    {
+                      tickLabelStyle: {
+                        fill: 'rgba(255, 255, 255, 0.87)',
+                        fontSize: 12,
+                      },
                     },
                   ]}
                   series={[
                     {
                       data: formattedData.map((item) => item.value),
-                      color: "#2196f3",
+                      color: '#2196f3',
                     },
                   ]}
                   onItemClick={(_, item) => handleItemClick(item)}
+                  sx={{
+                    '& .MuiChartsAxis-tickLabel': {
+                      fill: 'rgba(255, 255, 255, 0.87) !important',
+                    },
+                    '& .MuiChartsAxis-line': {
+                      stroke: 'rgba(255, 255, 255, 0.3)',
+                    },
+                    '& .MuiChartsAxis-tick': {
+                      stroke: 'rgba(255, 255, 255, 0.3)',
+                    },
+                    '& .MuiChartsGrid-line': {
+                      stroke: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
                 />
               )}
             </div>
