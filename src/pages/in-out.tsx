@@ -4,6 +4,7 @@ import useForm from "../hooks/forms/useForms";
 import useTags from "../hooks/fetching/useTags";
 import useCreateRecord from "../hooks/actions/useCreateRecord";
 import useTemporalState from "../hooks/effects/temporalState";
+import Button from "../components/ui/Button";
 
 const InOut = styled.form`
   display: flex;
@@ -115,9 +116,9 @@ const InOutPage = () => {
           );
         })}
       </Select>
-      <button className={temporalState.state?.class}>
+      <Button className={temporalState.state?.class}>
         {temporalState.state?.text ?? "Create record"}
-      </button>
+      </Button>
     </InOut>
   );
 };
