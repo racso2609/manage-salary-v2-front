@@ -262,7 +262,14 @@ const DashboardPage = () => {
 
 
 
-  const accountBalance = (previousBalance || 0) + (data?.total || 0);
+  const accountBalance = useMemo(() => {
+    // If no date filter is applied (All Time), use the total directly
+    // If date filter is applied, add previous balance to show balance up to that point
+    const hasDateFilter = dateInput.value.from || dateInput.value.to;
+    return hasDateFilter
+      ? (previousBalance || 0) + (data?.total || 0)
+      : (data?.total || 0);
+  }, [dateInput.value.from, dateInput.value.to, previousBalance, data?.total]);
 
   const topCategories = useMemo(() => {
     if (!data?.records || !tags) return [];
