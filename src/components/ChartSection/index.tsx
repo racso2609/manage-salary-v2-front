@@ -11,6 +11,7 @@ import { Record } from "../../types/manageSalaryTypes/records";
 import DateQuickSelect, { DateRange } from "./DateQuickSelect";
 import ChartInsights from "./ChartInsights";
 import ChartExport from "./ChartExport";
+import ChartTooltip from "./ChartTooltip";
 
 const ChartSectionContainer = styled.div`
   display: flex;
@@ -232,6 +233,7 @@ const ChartSection = memo(
   }: ChartSectionProps) => {
     const [selectedChartType, setSelectedChartType] =
       useState<ChartType>("pie");
+    const [selectedItem, setSelectedItem] = useState<any>(null);
 
     const formattedData = useMemo(() => {
       // Generate colors for tags since Tag type doesn't include color
@@ -275,9 +277,16 @@ const ChartSection = memo(
     const chartTitle =
       chartType === "in" ? "Income Breakdown" : "Expense Breakdown";
 
-    const handleRefresh = () => {
-      onRefresh?.();
-    };
+  const handleRefresh = () => {
+    onRefresh?.();
+  };
+
+  const handleItemClick = (item: any) => {
+    if (item?.dataIndex !== undefined && formattedData[item.dataIndex]) {
+      setSelectedItem(selectedItem?.dataIndex === item.dataIndex ? null : formattedData[item.dataIndex]);
+    }
+    onTagClick?.(item.dataIndex?.toString() || "");
+  };
 
     return (
       <ChartSectionContainer>
@@ -337,9 +346,7 @@ const ChartSection = memo(
                       highlightScope: { fade: "global", highlight: "item" },
                     },
                   ]}
-                  onItemClick={(_, item) => {
-                    onTagClick?.(item.dataIndex?.toString() || "");
-                  }}
+                  onItemClick={(_, item) => handleItemClick(item)}
                 />
               ) : (
                 <BarChart
@@ -356,12 +363,7 @@ const ChartSection = memo(
                       color: "#2196f3",
                     },
                   ]}
-                  onItemClick={(_, item) => {
-                    const index = item.dataIndex;
-                    if (typeof index === "number" && formattedData[index]) {
-                      onTagClick?.(formattedData[index].id);
-                    }
-                  }}
+                onItemClick={(_, item) => handleItemClick(item)}
                 />
               )}
             </div>
@@ -388,6 +390,16 @@ const ChartSection = memo(
           chartType={chartType}
           dateRange={dateRange}
         />
+
+        {selectedItem && (
+          <ChartTooltip
+            data={selectedItem}
+            total={formattedData.reduce((sum, item) => sum + item.value, 0)}
+            dateRange={dateRange}
+            chartType={chartType}
+            position={{ x: window.innerWidth / 2, y: window.innerHeight / 2 }}
+          />
+        )}
       </ChartSectionContainer>
     );
   },

@@ -9,7 +9,7 @@ import useDashboardInfo from "../hooks/fetching/useDashboardInfo";
 import { useMemo, useState } from "react";
 import useTag from "../hooks/fetching/useTag";
 import useForm from "../hooks/forms/useForms";
-import { Input } from "../components/Inputs";
+
 import moment from "moment";
 import { formatDate } from "../utils/formatter/date";
 import { formatNumber } from "../utils/formatter/numbers";
@@ -57,23 +57,7 @@ const ListsSection = styled.section`
   justify-content: space-around;
 `;
 
-const DateFilterSection = styled.section`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
 
-  & > * {
-    width: 100%;
-    max-width: 200px;
-  }
-
-  @media (max-width: 500px) {
-    & > * {
-      width: 100%;
-      max-width: unset;
-    }
-  }
-`;
 
 const AlertBanner = ({
   alerts,
@@ -276,43 +260,7 @@ const DashboardPage = () => {
     setEditingRecord(null);
   };
 
-  const handleDate = (date: string, type: "from" | "to") => {
-    console.log(date);
-    if (!date) {
-      dateInput.onChange({
-        target: {
-          value: {
-            from: "",
-            to: "",
-          },
-        },
-      });
-      return;
-    }
-    let from = moment(
-      new Date(type === "from" ? date : dateInput.value.from),
-    ).add(1, "day");
 
-    let to = moment(new Date(type === "to" ? date : dateInput.value.to)).add(
-      1,
-      "day",
-    );
-
-    if (from.isAfter(to) && to.isValid()) {
-      to = from.add(1, "week");
-    } else if (to.isBefore(from) && from.isValid()) {
-      from = to.subtract(1, "week");
-    }
-
-    dateInput.onChange({
-      target: {
-        value: {
-          from: from.isValid() ? formatDate(from.toDate()) : "",
-          to: to.isValid() ? formatDate(to.toDate()) : "",
-        },
-      },
-    });
-  };
 
   const accountBalance = (previousBalance || 0) + (data?.total || 0);
 
@@ -446,22 +394,6 @@ const DashboardPage = () => {
               });
             }}
           />
-
-          <DateFilterSection>
-            <p>from date</p>
-            <Input
-              {...dateInput}
-              onChange={(e) => handleDate(e.target.value, "from")}
-              value={dateInput.value.from}
-            />
-
-            <p>to date</p>
-            <Input
-              {...dateInput}
-              onChange={(e) => handleDate(e.target.value, "to")}
-              value={dateInput.value.to}
-            />
-          </DateFilterSection>
         </Card>
         <div className="summary-section">
           <TopCategories
@@ -531,4 +463,3 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
-
