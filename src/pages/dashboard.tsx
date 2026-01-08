@@ -19,6 +19,7 @@ import useUpdateRecord from "../hooks/actions/useUpdateRecord";
 import TotalContainer from "../components/TotalContainer";
 import TopCategories from "../components/TopCategories";
 import RecentTransactions from "../components/RecentTransactions";
+import SpendingInsights from "../components/SpendingInsights";
 import ChartSection from "../components/ChartSection";
 
 const Dashboard = styled.section`
@@ -353,6 +354,14 @@ const DashboardPage = () => {
         <RecentTransactions
           recentTransactions={recentTransactions}
           onTransactionClick={handleEditRecord}
+          isLoading={isLoading}
+        />
+        <SpendingInsights
+          records={data?.records || {}}
+          dateRange={{
+            from: dateInput.value.from,
+            to: dateInput.value.to,
+          }}
           isLoading={isLoading}
         />
       </Header>
