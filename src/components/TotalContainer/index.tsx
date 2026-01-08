@@ -48,15 +48,29 @@ const Header = styled.header`
   .total-container {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding: 20px;
+    gap: 24px;
+    padding: 24px;
+
+    /* Section headers */
+    .section-header {
+      font-size: 14px;
+      font-weight: 600;
+      color: ${({ theme }) => theme.colors.textSecondary};
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid ${({ theme }) => theme.colors.borderLight};
+    }
 
     .balance-section {
       display: flex;
-      align-items: center;
-      gap: 12px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+      flex-direction: column;
+      gap: 16px;
+      padding: 20px;
+      background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}10, ${({ theme }) => theme.colors.secondary}10);
+      border-radius: 12px;
+      border: 1px solid ${({ theme }) => theme.colors.primary}20;
 
       .icon-container {
         width: 40px;
@@ -70,48 +84,88 @@ const Header = styled.header`
       }
 
       .balance-content {
-        flex: 1;
+        text-align: center;
 
         .balance-label {
-          font-size: 14px;
+          font-size: 16px;
           color: ${({ theme }) => theme.colors.textSecondary};
-          margin: 0 0 4px 0;
+          margin: 0 0 8px 0;
+          font-weight: 500;
         }
 
         .balance-amount {
-          font-size: 28px;
-          font-weight: 600;
+          font-size: 32px;
+          font-weight: 700;
           margin: 0;
+          color: ${({ theme }) => theme.colors.text};
         }
       }
     }
 
-    .metrics-section {
+    .flow-section {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 16px;
+
+      .flow-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+
+        .flow-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: ${({ theme }) => theme.colors.text};
+          margin: 0;
+        }
+
+        .flow-summary {
+          font-size: 14px;
+          color: ${({ theme }) => theme.colors.textSecondary};
+          margin: 0;
+        }
+      }
 
       .metric-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 12px 16px;
-        border-radius: 8px;
+        padding: 16px 20px;
+        border-radius: 12px;
         background: ${({ theme }) => theme.colors.surface};
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
         cursor: pointer;
-        border: 1px solid transparent;
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 4px;
+          background: ${({ theme }) => theme.colors.primary};
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
 
         &:hover {
-          background: ${({ theme }) => theme.colors.border};
-          transform: translateY(-1px);
-          border-color: ${({ theme }) => theme.colors.primary};
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          background: ${({ theme }) => theme.colors.primary}08;
+          transform: translateY(-2px);
+          border-color: ${({ theme }) => theme.colors.primary}30;
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+
+          &::before {
+            opacity: 1;
+          }
         }
 
         &:active {
           transform: translateY(0);
-          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .metric-left {
@@ -148,110 +202,249 @@ const Header = styled.header`
       }
     }
 
-    .progress-section {
-      margin-top: 16px;
+    .insights-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
 
-      .progress-label {
-        font-size: 14px;
-        color: ${({ theme }) => theme.colors.textSecondary};
-        margin: 0 0 8px 0;
-        display: flex;
-        justify-content: space-between;
-      }
-
-      .progress-bar {
-        width: 100%;
-        height: 8px;
-        background: ${({ theme }) => theme.colors.border};
-        border-radius: 4px;
-        overflow: hidden;
-
-        .progress-fill {
-          height: 100%;
-          border-radius: 4px;
-          transition: width 0.3s ease;
-        }
-      }
-    }
-
-    .additional-metrics-section {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 12px;
-      margin-top: 16px;
-
-      .metric-card {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        padding: 12px;
+      .progress-section {
         background: ${({ theme }) => theme.colors.surface};
-        border-radius: 8px;
+        padding: 20px;
+        border-radius: 12px;
         border: 1px solid ${({ theme }) => theme.colors.border};
-        transition: all 0.2s ease;
-        cursor: help;
 
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-          border-color: ${({ theme }) => theme.colors.primary};
-        }
-
-        &.loading {
-          .metric-icon {
-            background: ${({ theme }) => theme.colors.border};
-          }
-
-          .metric-label,
-          .metric-value {
-            background: ${({ theme }) => theme.colors.border};
-            color: transparent;
-            border-radius: 4px;
-          }
-        }
-
-        .metric-icon {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 8px;
-          font-size: 12px;
-        }
-
-        .metric-label {
-          font-size: 12px;
-          color: ${({ theme }) => theme.colors.textSecondary};
-          margin: 0 0 4px 0;
-        }
-
-        .metric-value {
+        .progress-label {
           font-size: 16px;
           font-weight: 600;
-          margin: 0;
+          color: ${({ theme }) => theme.colors.text};
+          margin: 0 0 16px 0;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .progress-bar {
+          width: 100%;
+          height: 12px;
+          background: ${({ theme }) => theme.colors.borderLight};
+          border-radius: 6px;
+          overflow: hidden;
+          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+
+          .progress-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.5s ease;
+            position: relative;
+
+            &::after {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+              animation: shimmer 2s infinite;
+            }
+          }
+        }
+
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+      }
+
+      .additional-metrics-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 16px;
+
+        .metric-card {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          padding: 20px 16px;
+          background: ${({ theme }) => theme.colors.surface};
+          border-radius: 12px;
+          border: 2px solid ${({ theme }) => theme.colors.borderLight};
+          transition: all 0.3s ease;
+          cursor: help;
+          position: relative;
+          overflow: hidden;
+
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+          }
+
+          &:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+            border-color: ${({ theme }) => theme.colors.primary};
+
+            &::before {
+              left: 100%;
+            }
+          }
+
+          &.loading {
+            .metric-icon {
+              background: ${({ theme }) => theme.colors.border};
+            }
+
+            .metric-label,
+            .metric-value {
+              background: ${({ theme }) => theme.colors.border};
+              color: transparent;
+              border-radius: 4px;
+            }
+          }
+
+          .metric-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          }
+
+          .metric-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: ${({ theme }) => theme.colors.textSecondary};
+            margin: 0 0 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+
+          .metric-value {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+            color: ${({ theme }) => theme.colors.text};
+          }
         }
       }
     }
 
     .filter-section {
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid ${({ theme }) => theme.colors.border};
+      margin-top: 20px;
+      padding: 16px 20px;
+      background: ${({ theme }) => theme.colors.surface};
+      border-radius: 12px;
+      border: 1px solid ${({ theme }) => theme.colors.border};
       text-align: center;
 
       .filter-label {
         font-size: 14px;
+        font-weight: 500;
         color: ${({ theme }) => theme.colors.textSecondary};
-        margin: 0;
+        margin: 0 0 8px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
       .filter-value {
-        font-size: 16px;
-        font-weight: 500;
-        margin: 4px 0 0 0;
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+        color: ${({ theme }) => theme.colors.primary};
+      }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      padding: 16px;
+
+      .balance-section {
+        padding: 16px;
+
+        .balance-content .balance-amount {
+          font-size: 28px;
+        }
+      }
+
+      .flow-section {
+        gap: 12px;
+
+        .metric-row {
+          padding: 14px 16px;
+
+          .metric-left .metric-label {
+            font-size: 15px;
+          }
+
+          .metric-right .metric-amount {
+            font-size: 16px;
+          }
+        }
+      }
+
+      .insights-section {
+        gap: 16px;
+
+        .progress-section {
+          padding: 16px;
+
+          .progress-label {
+            font-size: 15px;
+            margin-bottom: 12px;
+          }
+        }
+
+        .additional-metrics-section {
+          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+          gap: 12px;
+
+          .metric-card {
+            padding: 16px 12px;
+
+            .metric-icon {
+              width: 28px;
+              height: 28px;
+              font-size: 13px;
+            }
+
+            .metric-label {
+              font-size: 12px;
+            }
+
+            .metric-value {
+              font-size: 16px;
+            }
+          }
+        }
+      }
+
+      .filter-section {
+        padding: 14px 16px;
+
+        .filter-value {
+          font-size: 16px;
+        }
+      }
+    }
+
+    @media (max-width: 480px) {
+      .balance-section .balance-content .balance-amount {
+        font-size: 24px;
+      }
+
+      .additional-metrics-section {
+        grid-template-columns: 1fr;
       }
     }
   }
@@ -309,14 +502,20 @@ const TotalContainer = ({
             <FontAwesomeIcon icon={faWallet} />
           </div>
           <div className="balance-content">
-            <p className="balance-label">Account Balance</p>
+            <p className="balance-label">Current Balance</p>
             <h2 className="balance-amount" data-profit={accountBalance > 0}>
               {formatNumber(accountBalance)} USD
             </h2>
           </div>
         </div>
 
-        <div className="metrics-section">
+        <div className="flow-section">
+          <div className="flow-header">
+            <h3 className="flow-title">Cash Flow</h3>
+            <p className="flow-summary">
+              Income vs Expenses ({daysInPeriod} days)
+            </p>
+          </div>
           {(['in', 'out'] as const).map((type) => {
             const isIncome = type === "in";
             const amount = data?.subTotal?.[type] || 0;
@@ -354,7 +553,7 @@ const TotalContainer = ({
                     <FontAwesomeIcon icon={isIncome ? faArrowUp : faArrowDown} />
                   </div>
                   <h3 className="metric-label">
-                    {type === "in" ? "Income" : "Expenses"}
+                    {type === "in" ? "Total Income" : "Total Expenses"}
                   </h3>
                 </div>
                 <div className="metric-right">
@@ -370,100 +569,105 @@ const TotalContainer = ({
           })}
         </div>
 
-        {(data?.subTotal?.in || 0) > 0 && (
-          <div className="progress-section">
-            <div className="progress-label">
-              <span>Income vs Expenses</span>
-              <span>
-                {((data?.subTotal?.out || 0) / (data?.subTotal?.in || 1) * 100).toFixed(1)}%
-              </span>
+        <div className="insights-section">
+          {(data?.subTotal?.in || 0) > 0 && (
+            <div className="progress-section">
+              <div className="progress-label">
+                <span>Spending Efficiency</span>
+                <span>
+                  {((data?.subTotal?.out || 0) / (data?.subTotal?.in || 1) * 100).toFixed(1)}% spent
+                </span>
+              </div>
+              <div className="progress-bar">
+                <div
+                  className="progress-fill"
+                  style={{
+                    width: `${Math.min((data?.subTotal?.out || 0) / (data?.subTotal?.in || 1) * 100, 100)}%`,
+                    backgroundColor: (data?.subTotal?.out || 0) > (data?.subTotal?.in || 0) ? '#f44336' : '#4caf50'
+                  }}
+                />
+              </div>
             </div>
-            <div className="progress-bar">
+          )}
+
+          <div>
+            <h4 className="section-header">Key Metrics</h4>
+            <div className="additional-metrics-section">
               <div
-                className="progress-fill"
-                style={{
-                  width: `${Math.min((data?.subTotal?.out || 0) / (data?.subTotal?.in || 1) * 100, 100)}%`,
-                  backgroundColor: (data?.subTotal?.out || 0) > (data?.subTotal?.in || 0) ? '#f44336' : '#4caf50'
-                }}
-              />
-            </div>
-          </div>
-        )}
+                className={`metric-card ${isLoading ? 'loading' : ''}`}
+                title="Net Flow = Income - Expenses. Positive values indicate you're saving money."
+              >
+                <div
+                  className="metric-icon"
+                  style={{
+                    backgroundColor: isLoading ? undefined : (netFlow >= 0 ? '#4caf50' : '#f44336'),
+                    color: 'white'
+                  }}
+                >
+                  <FontAwesomeIcon icon={faChartLine} />
+                </div>
+                <p className="metric-label">
+                  {isLoading ? '\u00A0' : 'Net Flow'}
+                </p>
+                <p
+                  className="metric-value"
+                  style={{ color: isLoading ? undefined : (netFlow >= 0 ? '#4caf50' : '#f44336') }}
+                >
+                  {isLoading ? '\u00A0\u00A0\u00A0\u00A0\u00A0' : `${netFlow >= 0 ? '+' : ''}${formatNumber(netFlow)}`}
+                </p>
+              </div>
 
-        <div className="additional-metrics-section">
-          <div
-            className={`metric-card ${isLoading ? 'loading' : ''}`}
-            title="Net Flow = Income - Expenses. Positive values indicate you're saving money."
-          >
-            <div
-              className="metric-icon"
-              style={{
-                backgroundColor: isLoading ? undefined : (netFlow >= 0 ? '#4caf50' : '#f44336'),
-                color: 'white'
-              }}
-            >
-              <FontAwesomeIcon icon={faChartLine} />
-            </div>
-            <p className="metric-label">
-              {isLoading ? '\u00A0' : 'Net Flow'}
-            </p>
-            <p
-              className="metric-value"
-              style={{ color: isLoading ? undefined : (netFlow >= 0 ? '#4caf50' : '#f44336') }}
-            >
-              {isLoading ? '\u00A0\u00A0\u00A0\u00A0\u00A0' : `${netFlow >= 0 ? '+' : ''}${formatNumber(netFlow)}`}
-            </p>
-          </div>
+              <div
+                className={`metric-card ${isLoading ? 'loading' : ''}`}
+                title="Savings Rate = (Income - Expenses) / Income × 100%. Shows what percentage of your income you're saving."
+              >
+                <div
+                  className="metric-icon"
+                  style={{
+                    backgroundColor: isLoading ? undefined : (savingsRate >= 0 ? '#4caf50' : '#f44336'),
+                    color: 'white'
+                  }}
+                >
+                  <FontAwesomeIcon icon={faPercent} />
+                </div>
+                <p className="metric-label">
+                  {isLoading ? '\u00A0' : 'Savings Rate'}
+                </p>
+                <p
+                  className="metric-value"
+                  style={{ color: isLoading ? undefined : (savingsRate >= 0 ? '#4caf50' : '#f44336') }}
+                >
+                  {isLoading ? '\u00A0\u00A0\u00A0\u00A0' : `${savingsRate >= 0 ? '+' : ''}${savingsRate.toFixed(1)}%`}
+                </p>
+              </div>
 
-          <div
-            className={`metric-card ${isLoading ? 'loading' : ''}`}
-            title="Savings Rate = (Income - Expenses) / Income × 100%. Shows what percentage of your income you're saving."
-          >
-            <div
-              className="metric-icon"
-              style={{
-                backgroundColor: isLoading ? undefined : (savingsRate >= 0 ? '#4caf50' : '#f44336'),
-                color: 'white'
-              }}
-            >
-              <FontAwesomeIcon icon={faPercent} />
+              <div
+                className={`metric-card ${isLoading ? 'loading' : ''}`}
+                title={`Daily Average = Total Expenses ÷ ${daysInPeriod} days. Shows your average daily spending.`}
+              >
+                <div
+                  className="metric-icon"
+                  style={{
+                    backgroundColor: isLoading ? undefined : '#2196f3',
+                    color: 'white'
+                  }}
+                >
+                  <FontAwesomeIcon icon={faCalendarDay} />
+                </div>
+                <p className="metric-label">
+                  {isLoading ? '\u00A0' : 'Daily Avg'}
+                </p>
+                <p className="metric-value" style={{ color: isLoading ? undefined : '#2196f3' }}>
+                  {isLoading ? '\u00A0\u00A0\u00A0\u00A0\u00A0' : formatNumber(dailyAverage)}
+                </p>
+              </div>
             </div>
-            <p className="metric-label">
-              {isLoading ? '\u00A0' : 'Savings Rate'}
-            </p>
-            <p
-              className="metric-value"
-              style={{ color: isLoading ? undefined : (savingsRate >= 0 ? '#4caf50' : '#f44336') }}
-            >
-              {isLoading ? '\u00A0\u00A0\u00A0\u00A0' : `${savingsRate >= 0 ? '+' : ''}${savingsRate.toFixed(1)}%`}
-            </p>
-          </div>
-
-          <div
-            className={`metric-card ${isLoading ? 'loading' : ''}`}
-            title={`Daily Average = Total Expenses ÷ ${daysInPeriod} days. Shows your average daily spending.`}
-          >
-            <div
-              className="metric-icon"
-              style={{
-                backgroundColor: isLoading ? undefined : '#2196f3',
-                color: 'white'
-              }}
-            >
-              <FontAwesomeIcon icon={faCalendarDay} />
-            </div>
-            <p className="metric-label">
-              {isLoading ? '\u00A0' : 'Daily Avg'}
-            </p>
-            <p className="metric-value" style={{ color: isLoading ? undefined : '#2196f3' }}>
-              {isLoading ? '\u00A0\u00A0\u00A0\u00A0\u00A0' : formatNumber(dailyAverage)}
-            </p>
           </div>
         </div>
 
         <div className="filter-section">
-          <p className="filter-label">Current Filter</p>
-          <p className="filter-value">{tag?.name || "ALL"}</p>
+          <p className="filter-label">Active Filter</p>
+          <p className="filter-value">{tag?.name || "All Categories"}</p>
         </div>
       </Card>
     </Header>
