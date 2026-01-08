@@ -65,7 +65,7 @@ const InOutPage = () => {
   const { handleCreateRecord } = useCreateRecord({
     handlers: {
       onSuccess: () => {
-        // cleanData();
+        cleanData();
         temporalState.setState({ text: "Record created", class: "success" });
       },
       onError: (e: any) => {

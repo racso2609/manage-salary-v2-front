@@ -1,4 +1,7 @@
-export const safeParse = <T>(jsonString: string, defaultValue: T): T => {
+export const safeParse = <T>(
+  jsonString: string,
+  defaultValue: T | null,
+): T | null => {
   try {
     return JSON.parse(jsonString) as T;
   } catch {
