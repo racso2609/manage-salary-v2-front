@@ -1,7 +1,7 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarAlt, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarAlt, faTimes, faCalendarCheck } from "@fortawesome/free-solid-svg-icons";
 import moment from "moment";
 
 const DateQuickSelectContainer = styled.div`
@@ -110,6 +110,62 @@ const FilterChip = styled.div`
   }
 `;
 
+const CustomDatePicker = styled.div`
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 8px;
+`;
+
+const DateInputContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  span {
+    color: ${({ theme }) => theme.colors.textSecondary};
+    font-size: 14px;
+  }
+`;
+
+const DateInput = styled.input`
+  padding: 6px 8px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 4px;
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 14px;
+  min-width: 120px;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+const ApplyButton = styled.button`
+  padding: 6px 12px;
+  background: ${({ theme }) => theme.colors.primary};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primary}dd;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
 export type DateRange = {
   from: string;
   to: string;
@@ -127,6 +183,9 @@ const DateQuickSelect = memo(({
   onRangeChange,
   onCustomRange
 }: DateQuickSelectProps) => {
+  const [showCustomPicker, setShowCustomPicker] = useState(false);
+  const [customFrom, setCustomFrom] = useState(currentRange.from);
+  const [customTo, setCustomTo] = useState(currentRange.to);
   const today = moment();
 
   const presetRanges: DateRange[] = [
@@ -153,9 +212,18 @@ const DateQuickSelect = memo(({
   ];
 
   const getActiveRange = () => {
-    return presetRanges.find(range =>
+    // Check for preset ranges first
+    const preset = presetRanges.find(range =>
       range.from === currentRange.from && range.to === currentRange.to
     );
+    if (preset) return preset;
+
+    // Check for "All Time" (empty strings)
+    if (currentRange.from === '' && currentRange.to === '') {
+      return { from: '', to: '', label: 'All Time' };
+    }
+
+    return null;
   };
 
   const activeRange = getActiveRange();
@@ -178,10 +246,45 @@ const DateQuickSelect = memo(({
           </QuickSelectButton>
         ))}
 
-        <QuickSelectButton onClick={onCustomRange}>
+        <QuickSelectButton onClick={() => setShowCustomPicker(!showCustomPicker)}>
+          <FontAwesomeIcon icon={faCalendarCheck} />
           Custom Range
         </QuickSelectButton>
       </QuickSelectGrid>
+
+      {showCustomPicker && (
+        <CustomDatePicker>
+          <DateInputContainer>
+            <DateInput
+              type="date"
+              value={customFrom}
+              onChange={(e) => setCustomFrom(e.target.value)}
+              placeholder="From date"
+            />
+            <span>to</span>
+            <DateInput
+              type="date"
+              value={customTo}
+              onChange={(e) => setCustomTo(e.target.value)}
+              placeholder="To date"
+            />
+            <ApplyButton
+              onClick={() => {
+                if (customFrom && customTo) {
+                  onRangeChange({
+                    from: customFrom,
+                    to: customTo,
+                    label: 'Custom Range'
+                  });
+                  setShowCustomPicker(false);
+                }
+              }}
+            >
+              Apply
+            </ApplyButton>
+          </DateInputContainer>
+        </CustomDatePicker>
+      )}
 
       {activeRange && (
         <ActiveFilters>

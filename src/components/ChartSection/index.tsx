@@ -12,6 +12,7 @@ import DateQuickSelect, { DateRange } from "./DateQuickSelect";
 import ChartInsights from "./ChartInsights";
 import ChartExport from "./ChartExport";
 import ChartTooltip from "./ChartTooltip";
+import ChartLegend from "./ChartLegend";
 
 const ChartSectionContainer = styled.div`
   display: flex;
@@ -370,14 +371,23 @@ const ChartSection = memo(
           )}
         </ChartContainer>
 
-        <DateQuickSelect
-          currentRange={dateRange}
-          onRangeChange={onDateRangeChange}
-          onCustomRange={() => {
-            // For now, just trigger a refresh or could open custom date picker
-            onRefresh?.();
-          }}
+        <ChartLegend
+          data={formattedData}
+          total={formattedData.reduce((sum, item) => sum + item.value, 0)}
         />
+
+        <DateQuickSelect
+            currentRange={dateRange}
+            onRangeChange={onDateRangeChange}
+            onCustomRange={() => {
+              // Reset to show all data (remove date filter)
+              onDateRangeChange({
+                from: '',
+                to: '',
+                label: 'All Time'
+              });
+            }}
+          />
 
         <ChartInsights
           records={records}
