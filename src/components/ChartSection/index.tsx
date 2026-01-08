@@ -9,6 +9,8 @@ import {
 import { PieChart, BarChart } from "@mui/x-charts";
 import { Record } from "../../types/manageSalaryTypes/records";
 import DateQuickSelect, { DateRange } from "./DateQuickSelect";
+import ChartInsights from "./ChartInsights";
+import ChartExport from "./ChartExport";
 
 const ChartSectionContainer = styled.div`
   display: flex;
@@ -373,6 +375,18 @@ const ChartSection = memo(
             // For now, just trigger a refresh or could open custom date picker
             onRefresh?.();
           }}
+        />
+
+        <ChartInsights
+          records={records}
+          chartType={chartType}
+          dateRange={dateRange}
+        />
+
+        <ChartExport
+          records={records}
+          chartType={chartType}
+          dateRange={dateRange}
         />
       </ChartSectionContainer>
     );
