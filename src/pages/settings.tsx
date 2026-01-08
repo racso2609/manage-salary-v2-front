@@ -1,27 +1,24 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
+import Modal from "../components/ui/Modal";
+import Button from "../components/ui/Button";
+import TextField from "../components/ui/TextField";
 import {
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Chip,
-  IconButton,
-  Alert,
-  Card,
-  CardContent,
-  Typography,
-} from "@mui/material";
-import { Delete, Edit } from "@mui/icons-material";
+  TableHeaderCell,
+} from "../components/ui/Table";
+import Chip from "../components/ui/Chip";
+import IconButton from "../components/ui/IconButton";
+import Alert from "../components/ui/Alert";
+import { Card } from "../components/utils/card";
+import { Paragraph } from "../components/ui/Typography";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash, faEdit } from "@fortawesome/free-solid-svg-icons";
 import useApiKeys from "../hooks/fetching/useApiKeys";
 import useCreateApiKey from "../hooks/actions/useCreateApiKey";
 import useDeleteApiKey from "../hooks/actions/useDeleteApiKey";
@@ -66,55 +63,49 @@ const AddApiKeyDialog = ({
     onClose();
   };
 
+  const actions = [
+    { label: "Cancel", onClick: onClose },
+    { label: "Create", onClick: handleSubmit, variant: "primary" as const },
+  ];
+
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Add New API Key</DialogTitle>
-      <DialogContent>
-        <TextField
-          label="Name"
-          fullWidth
-          margin="dense"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        />
-        <Card
-          sx={{
-            cursor: "pointer",
-            backgroundColor: hasCreateRecords
-              ? "primary.light"
-              : "background.paper",
-            margin: "10px 0",
-          }}
-          onClick={() =>
-            setFormData({
-              ...formData,
-              permissions: hasCreateRecords ? [] : ["create_records"],
-            })
-          }
-        >
-          <CardContent>
-            <Typography variant="body1">create_records</Typography>
-          </CardContent>
-        </Card>
-        <TextField
-          label="Expires At"
-          type="datetime-local"
-          fullWidth
-          margin="dense"
-          InputLabelProps={{ shrink: true }}
-          value={formData.expiresAt}
-          onChange={(e) =>
-            setFormData({ ...formData, expiresAt: e.target.value })
-          }
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained">
-          Create
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <Modal
+      isOpen={open}
+      title="Add New API Key"
+      onClose={onClose}
+      actions={actions}
+    >
+      <TextField
+        label="Name"
+        fullWidth
+        margin="dense"
+        value={formData.name}
+        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+      />
+      <Card
+        background={hasCreateRecords ? "#667eea" : "#667eea33"}
+        padding="10px"
+        onClick={() =>
+          setFormData({
+            ...formData,
+            permissions: hasCreateRecords ? [] : ["create_records"],
+          })
+        }
+        style={{ cursor: "pointer", margin: "10px 0" }}
+      >
+        <Paragraph>create_records</Paragraph>
+      </Card>
+      <TextField
+        label="Expires At"
+        type="datetime-local"
+        fullWidth
+        margin="dense"
+        value={formData.expiresAt || ""}
+        onChange={(e) =>
+          setFormData({ ...formData, expiresAt: e.target.value })
+        }
+      />
+    </Modal>
   );
 };
 
@@ -138,7 +129,7 @@ const EditApiKeyDialog = ({
     if (apiKey) {
       setFormData({
         permissions: apiKey.permissions,
-        expiresAt: apiKey.expiresAt,
+        expiresAt: apiKey.expiresAt || "",
       });
     }
   }, [apiKey]);
@@ -151,48 +142,42 @@ const EditApiKeyDialog = ({
     onClose();
   };
 
+  const actions = [
+    { label: "Cancel", onClick: onClose },
+    { label: "Update", onClick: handleSubmit, variant: "primary" as const },
+  ];
+
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Edit API Key</DialogTitle>
-      <DialogContent>
-        <Card
-          sx={{
-            cursor: "pointer",
-            backgroundColor: hasCreateRecords
-              ? "primary.light"
-              : "background.paper",
-            margin: "10px 0",
-          }}
-          onClick={() =>
-            setFormData({
-              ...formData,
-              permissions: hasCreateRecords ? [] : ["create_records"],
-            })
-          }
-        >
-          <CardContent>
-            <Typography variant="body1">create_records</Typography>
-          </CardContent>
-        </Card>
-        <TextField
-          label="Expires At"
-          type="datetime-local"
-          fullWidth
-          margin="dense"
-          InputLabelProps={{ shrink: true }}
-          value={formData.expiresAt}
-          onChange={(e) =>
-            setFormData({ ...formData, expiresAt: e.target.value })
-          }
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained">
-          Update
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <Modal
+      isOpen={open}
+      title="Edit API Key"
+      onClose={onClose}
+      actions={actions}
+    >
+      <Card
+        background={hasCreateRecords ? "#667eea" : "#667eea33"}
+        padding="10px"
+        onClick={() =>
+          setFormData({
+            ...formData,
+            permissions: hasCreateRecords ? [] : ["create_records"],
+          })
+        }
+        style={{ cursor: "pointer", margin: "10px 0" }}
+      >
+        <Paragraph>create_records</Paragraph>
+      </Card>
+      <TextField
+        label="Expires At"
+        type="datetime-local"
+        fullWidth
+        margin="dense"
+        value={formData.expiresAt || ""}
+        onChange={(e) =>
+          setFormData({ ...formData, expiresAt: e.target.value })
+        }
+      />
+    </Modal>
   );
 };
 
@@ -206,20 +191,23 @@ const DeleteApiKeyDialog = ({
   onClose: () => void;
   onConfirm: () => void;
   apiKeyName: string;
-}) => (
-  <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-    <DialogTitle>Confirm Delete</DialogTitle>
-    <DialogContent>
+}) => {
+  const actions = [
+    { label: "Cancel", onClick: onClose },
+    { label: "Delete", onClick: onConfirm, variant: "danger" as const },
+  ];
+
+  return (
+    <Modal
+      isOpen={open}
+      title="Confirm Delete"
+      onClose={onClose}
+      actions={actions}
+    >
       Are you sure you want to deactivate the API key "{apiKeyName}"?
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={onClose}>Cancel</Button>
-      <Button onClick={onConfirm} variant="contained" color="error">
-        Delete
-      </Button>
-    </DialogActions>
-  </Dialog>
-);
+    </Modal>
+  );
+};
 
 const ApiKeyCreatedDialog = ({
   open,
@@ -229,10 +217,16 @@ const ApiKeyCreatedDialog = ({
   open: boolean;
   onClose: () => void;
   apiKey: string;
-}) => (
-  <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-    <DialogTitle>API Key Created</DialogTitle>
-    <DialogContent>
+}) => {
+  const actions = [{ label: "Close", onClick: onClose }];
+
+  return (
+    <Modal
+      isOpen={open}
+      title="API Key Created"
+      onClose={onClose}
+      actions={actions}
+    >
       <Alert severity="warning">
         Save this key securely. It will not be shown again.
       </Alert>
@@ -243,12 +237,9 @@ const ApiKeyCreatedDialog = ({
         value={apiKey}
         InputProps={{ readOnly: true }}
       />
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={onClose}>Close</Button>
-    </DialogActions>
-  </Dialog>
-);
+    </Modal>
+  );
+};
 
 const ApiKeysSection = () => {
   const { data: apiKeys, error, mutate: mutateApiKeys } = useApiKeys();
@@ -322,19 +313,19 @@ const ApiKeysSection = () => {
   return (
     <>
       <h2>API Keys</h2>
-      <Button variant="contained" onClick={handleAdd}>
+      <Button variant="primary" onClick={handleAdd}>
         Add New API Key
       </Button>
-      <TableContainer component={Paper}>
+      <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Permissions</TableCell>
-              <TableCell>Expires At</TableCell>
-              <TableCell>Created At</TableCell>
-              <TableCell>Active</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableHeaderCell>Name</TableHeaderCell>
+              <TableHeaderCell>Permissions</TableHeaderCell>
+              <TableHeaderCell>Expires At</TableHeaderCell>
+              <TableHeaderCell>Created At</TableHeaderCell>
+              <TableHeaderCell>Active</TableHeaderCell>
+              <TableHeaderCell>Actions</TableHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -357,10 +348,10 @@ const ApiKeysSection = () => {
                 <TableCell>{key.active ? "Yes" : "No"}</TableCell>
                 <TableCell>
                   <IconButton onClick={() => handleEdit(key)}>
-                    <Edit />
+                    <FontAwesomeIcon icon={faEdit} />
                   </IconButton>
                   <IconButton onClick={() => handleDelete(key)}>
-                    <Delete />
+                    <FontAwesomeIcon icon={faTrash} />
                   </IconButton>
                 </TableCell>
               </TableRow>

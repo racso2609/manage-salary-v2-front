@@ -1,14 +1,18 @@
-import styled from 'styled-components';
-import { ReactNode, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import Button from '../Button';
+import styled from "styled-components";
+import { ReactNode, useEffect } from "react";
+import { createPortal } from "react-dom";
+import Button from "../Button";
 
 interface ModalProps {
   isOpen: boolean;
   title?: string;
   children: ReactNode;
   onClose: () => void;
-  actions?: { label: string; onClick: () => void; variant?: 'primary' | 'secondary' | 'danger' }[];
+  actions?: {
+    label: string;
+    onClick: () => void;
+    variant?: "primary" | "secondary" | "danger";
+  }[];
 }
 
 const Backdrop = styled.div`
@@ -49,6 +53,7 @@ const CloseButton = styled.button`
   font-size: 24px;
   cursor: pointer;
   color: ${({ theme }) => theme.colors.text};
+  width: auto;
 `;
 
 const ModalBody = styled.div`
@@ -61,15 +66,21 @@ const ModalFooter = styled.div`
   gap: ${({ theme }) => theme.spacing.medium};
 `;
 
-const Modal = ({ isOpen, title, children, onClose, actions = [] }: ModalProps) => {
+const Modal = ({
+  isOpen,
+  title,
+  children,
+  onClose,
+  actions = [],
+}: ModalProps) => {
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
@@ -80,7 +91,7 @@ const Modal = ({ isOpen, title, children, onClose, actions = [] }: ModalProps) =
       <ModalContent onClick={(e) => e.stopPropagation()}>
         {title && (
           <ModalHeader>
-            <h2>{title}</h2>
+            <h2 style={{ flex: 1, display: "flex" }}>{title}</h2>
             <CloseButton onClick={onClose}>&times;</CloseButton>
           </ModalHeader>
         )}
@@ -88,7 +99,11 @@ const Modal = ({ isOpen, title, children, onClose, actions = [] }: ModalProps) =
         {actions.length > 0 && (
           <ModalFooter>
             {actions.map((action, index) => (
-              <Button key={index} variant={action.variant} onClick={action.onClick}>
+              <Button
+                key={index}
+                variant={action.variant}
+                onClick={action.onClick}
+              >
                 {action.label}
               </Button>
             ))}
@@ -102,3 +117,4 @@ const Modal = ({ isOpen, title, children, onClose, actions = [] }: ModalProps) =
 };
 
 export default Modal;
+
