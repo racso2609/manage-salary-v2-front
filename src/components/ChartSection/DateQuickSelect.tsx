@@ -212,6 +212,11 @@ const DateQuickSelect = memo(
         to: today.clone().endOf("month").format("YYYY-MM-DD"),
         label: "This Month",
       },
+      {
+        from: today.clone().startOf("year").format("YYYY-MM-DD"),
+        to: today.clone().endOf("year").format("YYYY-MM-DD"),
+        label: "This Year",
+      },
     ];
 
     const getActiveRange = () => {

@@ -204,7 +204,6 @@ const DashboardPage = () => {
 
   const {
     data,
-    previousBalance,
     mutate: mutateDashboard,
     isLoading,
   } = useDashboardInfo({
@@ -212,6 +211,7 @@ const DashboardPage = () => {
     from: dateInput.value.from,
     to: dateInput.value.to,
   });
+  const { data: fullYearData } = useDashboardInfo({});
 
   const [chartType, setCharType] = useState<string>("out");
   const { data: tag } = useTag({ tagId: selectedTag ?? "" });
@@ -268,8 +268,9 @@ const DashboardPage = () => {
     // All time balance - complete historical balance
     // For now, simulate a different value by adding previous balance
     // In production, this would come from a separate API call
-    return (previousBalance || 0) + (data?.total || 0);
-  }, [previousBalance, data?.total]);
+
+    return fullYearData?.total || 0;
+  }, [fullYearData?.total]);
 
   const topCategories = useMemo(() => {
     if (!data?.records || !tags) return [];
