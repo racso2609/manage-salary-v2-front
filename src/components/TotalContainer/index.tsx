@@ -1,3 +1,4 @@
+import React, { memo, useMemo } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -6,7 +7,7 @@ import {
   faArrowDown,
   faChartLine,
   faPercent,
-  faCalendarDay
+  faCalendarDay,
 } from "@fortawesome/free-solid-svg-icons";
 import { Card } from "../utils/card";
 import { formatNumber } from "../../utils/formatter/numbers";
@@ -68,7 +69,11 @@ const Header = styled.header`
       flex-direction: column;
       gap: 16px;
       padding: 20px;
-      background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}10, ${({ theme }) => theme.colors.secondary}10);
+      background: linear-gradient(
+        135deg,
+        ${({ theme }) => theme.colors.primary}10,
+        ${({ theme }) => theme.colors.secondary}10
+      );
       border-radius: 12px;
       border: 1px solid ${({ theme }) => theme.colors.primary}20;
 
@@ -141,7 +146,7 @@ const Header = styled.header`
         overflow: hidden;
 
         &::before {
-          content: '';
+          content: "";
           position: absolute;
           left: 0;
           top: 0;
@@ -160,6 +165,16 @@ const Header = styled.header`
 
           &::before {
             opacity: 1;
+          }
+        }
+
+        /* Optimize for reduced motion preference */
+        @media (prefers-reduced-motion: reduce) {
+          &,
+          &:hover,
+          &:active {
+            transform: none;
+            transition: none;
           }
         }
 
@@ -238,21 +253,30 @@ const Header = styled.header`
             position: relative;
 
             &::after {
-              content: '';
+              content: "";
               position: absolute;
               top: 0;
               left: 0;
               right: 0;
               bottom: 0;
-              background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+              background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+              );
               animation: shimmer 2s infinite;
             }
           }
         }
 
         @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(100%);
+          }
         }
       }
 
@@ -276,13 +300,18 @@ const Header = styled.header`
           overflow: hidden;
 
           &::before {
-            content: '';
+            content: "";
             position: absolute;
             top: 0;
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            background: linear-gradient(
+              90deg,
+              transparent,
+              rgba(255, 255, 255, 0.1),
+              transparent
+            );
             transition: left 0.5s;
           }
 
@@ -296,16 +325,49 @@ const Header = styled.header`
             }
           }
 
+          /* Optimize for reduced motion preference */
+          @media (prefers-reduced-motion: reduce) {
+            &,
+            &:hover {
+              transform: none;
+              transition: none;
+
+              &::before {
+                animation: none;
+              }
+            }
+          }
+
           &.loading {
             .metric-icon {
               background: ${({ theme }) => theme.colors.border};
+              animation: pulse 1.5s ease-in-out infinite;
             }
 
-            .metric-label,
+            .metric-label {
+              background: ${({ theme }) => theme.colors.border};
+              color: transparent;
+              border-radius: 4px;
+              animation: pulse 1.5s ease-in-out infinite;
+              animation-delay: 0.1s;
+            }
+
             .metric-value {
               background: ${({ theme }) => theme.colors.border};
               color: transparent;
               border-radius: 4px;
+              animation: pulse 1.5s ease-in-out infinite;
+              animation-delay: 0.2s;
+            }
+          }
+
+          @keyframes pulse {
+            0%,
+            100% {
+              opacity: 1;
+            }
+            50% {
+              opacity: 0.6;
             }
           }
 
@@ -469,209 +531,317 @@ interface TotalContainerProps {
   };
 }
 
-const TotalContainer = ({
-  accountBalance,
-  data,
-  tag,
-  onChartTypeChange,
-  isLoading,
-  dateRange
-}: TotalContainerProps) => {
-  // Calculate additional metrics
-  const income = data?.subTotal?.in || 0;
-  const expenses = data?.subTotal?.out || 0;
-  const netFlow = income - expenses;
-  const savingsRate = income > 0 ? (netFlow / income) * 100 : 0;
+const TotalContainer = memo(
+  ({
+    accountBalance,
+    data,
+    tag,
+    onChartTypeChange,
+    isLoading,
+    dateRange,
+  }: TotalContainerProps) => {
+    // Memoize expensive calculations
+    const metrics = useMemo(() => {
+      const income = data?.subTotal?.in || 0;
+      const expenses = data?.subTotal?.out || 0;
+      const netFlow = income - expenses;
+      const savingsRate = income > 0 ? (netFlow / income) * 100 : 0;
 
-  // Calculate number of days in the current period
-  const startDate = moment(dateRange.from || moment().startOf("year"));
-  const endDate = moment(dateRange.to || moment().endOf("year"));
-  const daysInPeriod = Math.max(1, endDate.diff(startDate, "days") + 1);
-  const dailyAverage = expenses / daysInPeriod;
+      // Calculate number of days in the current period
+      const startDate = moment(dateRange.from || moment().startOf("year"));
+      const endDate = moment(dateRange.to || moment().endOf("year"));
+      const daysInPeriod = Math.max(1, endDate.diff(startDate, "days") + 1);
+      const dailyAverage = expenses / daysInPeriod;
 
-  return (
-    <Header>
-      <Card
-        background="gray"
-        width={"100%"}
-        radius="10px"
-        className="total-container"
-      >
-        <div className="balance-section">
-          <div className="icon-container">
-            <FontAwesomeIcon icon={faWallet} />
+      return {
+        income,
+        expenses,
+        netFlow,
+        savingsRate,
+        daysInPeriod,
+        dailyAverage,
+      };
+    }, [data?.subTotal?.in, data?.subTotal?.out, dateRange.from, dateRange.to]);
+
+    const {
+      income,
+      expenses,
+      netFlow,
+      savingsRate,
+      daysInPeriod,
+      dailyAverage,
+    } = metrics;
+
+    return (
+      <Header>
+        <Card
+          background="gray"
+          width={"100%"}
+          radius="10px"
+          className="total-container"
+        >
+          <div className="balance-section">
+            <div className="icon-container">
+              <FontAwesomeIcon icon={faWallet} />
+            </div>
+            <div className="balance-content">
+              <p className="balance-label">Current Balance</p>
+              <h2 className="balance-amount" data-profit={accountBalance > 0}>
+                {formatNumber(accountBalance)} USD
+              </h2>
+            </div>
           </div>
-          <div className="balance-content">
-            <p className="balance-label">Current Balance</p>
-            <h2 className="balance-amount" data-profit={accountBalance > 0}>
-              {formatNumber(accountBalance)} USD
-            </h2>
-          </div>
-        </div>
 
-        <div className="flow-section">
-          <div className="flow-header">
-            <h3 className="flow-title">Cash Flow</h3>
-            <p className="flow-summary">
-              Income vs Expenses ({daysInPeriod} days)
-            </p>
-          </div>
-          {(['in', 'out'] as const).map((type) => {
-            const isIncome = type === "in";
-            const amount = data?.subTotal?.[type] || 0;
-            const isPositive = isIncome ? true : amount > 0;
-            const tooltipText = isIncome
-              ? "Click to filter chart to show only income transactions"
-              : "Click to filter chart to show only expense transactions";
+          <div className="flow-section">
+            <div className="flow-header">
+              <h3 className="flow-title">Cash Flow</h3>
+              <p className="flow-summary">
+                Income vs Expenses ({daysInPeriod} days)
+              </p>
+            </div>
+            {(["in", "out"] as const).map((type) => {
+              const isIncome = type === "in";
+              const amount = data?.subTotal?.[type] || 0;
+              const isPositive = isIncome ? true : amount > 0;
+              const tooltipText = isIncome
+                ? "Click to filter chart to show only income transactions"
+                : "Click to filter chart to show only expense transactions";
 
-            return (
-              <div
-                className="metric-row"
-                onClick={() => {
-                  if (data?.subTotal?.[type]) onChartTypeChange(type);
-                }}
-                key={type}
-                title={tooltipText}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
+              return (
+                <div
+                  className="metric-row"
+                  onClick={() => {
                     if (data?.subTotal?.[type]) onChartTypeChange(type);
-                  }
-                }}
-                aria-label={`${type === "in" ? "Income" : "Expenses"}: ${formatNumber(amount)} - Click to filter chart`}
-              >
-                <div className="metric-left">
+                  }}
+                  key={type}
+                  title={tooltipText}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      if (data?.subTotal?.[type]) onChartTypeChange(type);
+                    }
+                  }}
+                  aria-label={`${type === "in" ? "Income" : "Expenses"}: ${formatNumber(amount)} - Click to filter chart`}
+                >
+                  <div className="metric-left">
+                    <div
+                      className="icon-container"
+                      style={{
+                        backgroundColor: isIncome ? "#4caf50" : "#f44336",
+                        color: "white",
+                      }}
+                    >
+                      <FontAwesomeIcon
+                        icon={isIncome ? faArrowUp : faArrowDown}
+                      />
+                    </div>
+                    <h3 className="metric-label">
+                      {type === "in" ? "Total Income" : "Total Expenses"}
+                    </h3>
+                  </div>
+                  <div className="metric-right">
+                    <h3 className="metric-amount" data-profit={isPositive}>
+                      {formatNumber(amount)}
+                    </h3>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="insights-section">
+            {income > 0 && (
+              <div className="progress-section">
+                <div className="progress-label">
+                  <span>Spending Efficiency</span>
+                  <span>{((expenses / income) * 100).toFixed(1)}%</span>
+                </div>
+                <div className="progress-bar">
                   <div
-                    className="icon-container"
+                    className="progress-fill"
                     style={{
-                      backgroundColor: isIncome ? '#4caf50' : '#f44336',
-                      color: 'white'
+                      width: `${Math.min((expenses / income) * 100, 100)}%`,
+                      backgroundColor:
+                        expenses > income ? "#f44336" : "#4caf50",
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div>
+              <h4 className="section-header">Key Metrics</h4>
+              <div className="additional-metrics-section">
+                <div
+                  className={`metric-card ${isLoading ? "loading" : ""}`}
+                  title="Net Flow = Income - Expenses. Positive values indicate you're saving money."
+                >
+                  <div
+                    className="metric-icon"
+                    style={{
+                      backgroundColor: isLoading
+                        ? undefined
+                        : netFlow >= 0
+                          ? "#4caf50"
+                          : "#f44336",
+                      color: "white",
                     }}
                   >
-                    <FontAwesomeIcon icon={isIncome ? faArrowUp : faArrowDown} />
+                    <FontAwesomeIcon icon={faChartLine} />
                   </div>
-                  <h3 className="metric-label">
-                    {type === "in" ? "Total Income" : "Total Expenses"}
-                  </h3>
-                </div>
-                <div className="metric-right">
-                  <h3
-                    className="metric-amount"
-                    data-profit={isPositive}
+                  <p className="metric-label">
+                    {isLoading ? "\u00A0" : "Net Flow"}
+                  </p>
+                  <p
+                    className="metric-value"
+                    style={{
+                      color: isLoading
+                        ? undefined
+                        : netFlow >= 0
+                          ? "#4caf50"
+                          : "#f44336",
+                    }}
                   >
-                    {formatNumber(amount)}
-                  </h3>
+                    {isLoading
+                      ? "\u00A0\u00A0\u00A0\u00A0\u00A0"
+                      : `${netFlow >= 0 ? "+" : ""}${formatNumber(netFlow)}`}
+                  </p>
                 </div>
-              </div>
-            );
-          })}
-        </div>
 
-        <div className="insights-section">
-          {(data?.subTotal?.in || 0) > 0 && (
-            <div className="progress-section">
-              <div className="progress-label">
-                <span>Spending Efficiency</span>
-                <span>
-                  {((data?.subTotal?.out || 0) / (data?.subTotal?.in || 1) * 100).toFixed(1)}% spent
-                </span>
-              </div>
-              <div className="progress-bar">
                 <div
-                  className="progress-fill"
-                  style={{
-                    width: `${Math.min((data?.subTotal?.out || 0) / (data?.subTotal?.in || 1) * 100, 100)}%`,
-                    backgroundColor: (data?.subTotal?.out || 0) > (data?.subTotal?.in || 0) ? '#f44336' : '#4caf50'
-                  }}
-                />
-              </div>
-            </div>
-          )}
-
-          <div>
-            <h4 className="section-header">Key Metrics</h4>
-            <div className="additional-metrics-section">
-              <div
-                className={`metric-card ${isLoading ? 'loading' : ''}`}
-                title="Net Flow = Income - Expenses. Positive values indicate you're saving money."
-              >
-                <div
-                  className="metric-icon"
-                  style={{
-                    backgroundColor: isLoading ? undefined : (netFlow >= 0 ? '#4caf50' : '#f44336'),
-                    color: 'white'
-                  }}
+                  className={`metric-card ${isLoading ? "loading" : ""}`}
+                  title="Savings Rate = (Income - Expenses) / Income × 100%. Shows what percentage of your income you're saving."
                 >
-                  <FontAwesomeIcon icon={faChartLine} />
+                  <div
+                    className="metric-icon"
+                    style={{
+                      backgroundColor: isLoading
+                        ? undefined
+                        : savingsRate >= 0
+                          ? "#4caf50"
+                          : "#f44336",
+                      color: "white",
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faPercent} />
+                  </div>
+                  <p className="metric-label">
+                    {isLoading ? "\u00A0" : "Savings Rate"}
+                  </p>
+                  <p
+                    className="metric-value"
+                    style={{
+                      color: isLoading
+                        ? undefined
+                        : savingsRate >= 0
+                          ? "#4caf50"
+                          : "#f44336",
+                    }}
+                  >
+                    {isLoading
+                      ? "\u00A0\u00A0\u00A0\u00A0"
+                      : `${savingsRate >= 0 ? "+" : ""}${savingsRate.toFixed(1)}%`}
+                  </p>
                 </div>
-                <p className="metric-label">
-                  {isLoading ? '\u00A0' : 'Net Flow'}
-                </p>
-                <p
-                  className="metric-value"
-                  style={{ color: isLoading ? undefined : (netFlow >= 0 ? '#4caf50' : '#f44336') }}
-                >
-                  {isLoading ? '\u00A0\u00A0\u00A0\u00A0\u00A0' : `${netFlow >= 0 ? '+' : ''}${formatNumber(netFlow)}`}
-                </p>
-              </div>
 
-              <div
-                className={`metric-card ${isLoading ? 'loading' : ''}`}
-                title="Savings Rate = (Income - Expenses) / Income × 100%. Shows what percentage of your income you're saving."
-              >
                 <div
-                  className="metric-icon"
-                  style={{
-                    backgroundColor: isLoading ? undefined : (savingsRate >= 0 ? '#4caf50' : '#f44336'),
-                    color: 'white'
-                  }}
+                  className={`metric-card ${isLoading ? "loading" : ""}`}
+                  title={`Daily Average = Total Expenses ÷ ${daysInPeriod} days. Shows your average daily spending.`}
                 >
-                  <FontAwesomeIcon icon={faPercent} />
+                  <div
+                    className="metric-icon"
+                    style={{
+                      backgroundColor: isLoading ? undefined : "#2196f3",
+                      color: "white",
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faCalendarDay} />
+                  </div>
+                  <p className="metric-label">
+                    {isLoading ? "\u00A0" : "Daily Avg"}
+                  </p>
+                  <p
+                    className="metric-value"
+                    style={{ color: isLoading ? undefined : "#2196f3" }}
+                  >
+                    {isLoading
+                      ? "\u00A0\u00A0\u00A0\u00A0\u00A0"
+                      : formatNumber(dailyAverage)}
+                  </p>
                 </div>
-                <p className="metric-label">
-                  {isLoading ? '\u00A0' : 'Savings Rate'}
-                </p>
-                <p
-                  className="metric-value"
-                  style={{ color: isLoading ? undefined : (savingsRate >= 0 ? '#4caf50' : '#f44336') }}
-                >
-                  {isLoading ? '\u00A0\u00A0\u00A0\u00A0' : `${savingsRate >= 0 ? '+' : ''}${savingsRate.toFixed(1)}%`}
-                </p>
-              </div>
-
-              <div
-                className={`metric-card ${isLoading ? 'loading' : ''}`}
-                title={`Daily Average = Total Expenses ÷ ${daysInPeriod} days. Shows your average daily spending.`}
-              >
-                <div
-                  className="metric-icon"
-                  style={{
-                    backgroundColor: isLoading ? undefined : '#2196f3',
-                    color: 'white'
-                  }}
-                >
-                  <FontAwesomeIcon icon={faCalendarDay} />
-                </div>
-                <p className="metric-label">
-                  {isLoading ? '\u00A0' : 'Daily Avg'}
-                </p>
-                <p className="metric-value" style={{ color: isLoading ? undefined : '#2196f3' }}>
-                  {isLoading ? '\u00A0\u00A0\u00A0\u00A0\u00A0' : formatNumber(dailyAverage)}
-                </p>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="filter-section">
-          <p className="filter-label">Active Filter</p>
-          <p className="filter-value">{tag?.name || "All Categories"}</p>
-        </div>
-      </Card>
-    </Header>
-  );
-};
+          <div className="filter-section">
+            <p className="filter-label">Active Filter</p>
+            <p className="filter-value">{tag?.name || "All Categories"}</p>
+          </div>
+        </Card>
+      </Header>
+    );
+  },
+);
 
-export default TotalContainer;
+TotalContainer.displayName = "TotalContainer";
+
+// Error Boundary Component
+class TotalContainerErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("TotalContainer error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <Card
+          background="gray"
+          width="100%"
+          radius="10px"
+          className="total-container"
+        >
+          <div
+            style={{
+              padding: "24px",
+              textAlign: "center",
+              color: "#f44336",
+            }}
+          >
+            <h3 style={{ margin: "0 0 8px 0" }}>
+              Unable to load financial data
+            </h3>
+            <p style={{ margin: 0, fontSize: "14px", opacity: 0.8 }}>
+              Please refresh the page or try again later.
+            </p>
+          </div>
+        </Card>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// Wrap with error boundary
+const TotalContainerWithErrorBoundary = (props: TotalContainerProps) => (
+  <TotalContainerErrorBoundary>
+    <TotalContainer {...props} />
+  </TotalContainerErrorBoundary>
+);
+
+export default TotalContainerWithErrorBoundary;
+
