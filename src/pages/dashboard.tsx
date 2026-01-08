@@ -11,13 +11,14 @@ import useTag from "../hooks/fetching/useTag";
 import useForm from "../hooks/forms/useForms";
 
 import moment from "moment";
-import { formatDate } from "../utils/formatter/date";
 import { formatNumber } from "../utils/formatter/numbers";
 import { Record } from "../types/manageSalaryTypes/records";
-import { CSVLink } from "react-csv";
+
 import RecordEditModal from "../components/RecordEditModal";
 import useUpdateRecord from "../hooks/actions/useUpdateRecord";
 import TotalContainer from "../components/TotalContainer";
+import TopCategories from "../components/TopCategories";
+import RecentTransactions from "../components/RecentTransactions";
 import ChartSection from "../components/ChartSection";
 
 const Dashboard = styled.section`
@@ -83,57 +84,6 @@ const AlertBanner = ({
       ))}
     </div>
   );
-
-const TopCategories = ({
-  topCategories,
-  onTagClick,
-}: {
-  topCategories: Array<{ tag: any; total: number }>;
-  onTagClick: (tagId: string) => void;
-}) => (
-  <Card background="gray" width="100%" radius="10px" style={{ flex: 1 }}>
-    <h3>Top Spending Categories</h3>
-    <ul style={{ listStyle: "none", padding: 0 }}>
-      {topCategories.map(({ tag, total }) => (
-        <li
-          key={tag._id}
-          onClick={() => onTagClick(tag._id)}
-          style={{ cursor: "pointer", marginBottom: "5px" }}
-        >
-          {tag.name}: {formatNumber(total)} USD
-        </li>
-      ))}
-    </ul>
-  </Card>
-);
-
-const RecentTransactions = ({
-  recentTransactions,
-}: {
-  recentTransactions: Record[];
-}) => (
-  <Card background="gray" width="100%" radius="10px" style={{ flex: 1 }}>
-    <h3>Recent Transactions</h3>
-    <div style={{ maxHeight: "200px", overflowY: "auto" }}>
-      {recentTransactions.map((record) => (
-        <div
-          key={record._id}
-          style={{
-            marginBottom: "10px",
-            borderBottom: "1px solid #ccc",
-            paddingBottom: "5px",
-          }}
-        >
-          <p style={{ margin: 0 }}>
-            {record.description} - {formatNumber(record.amount)} USD (
-            {record.type})
-          </p>
-          <small>{formatDate(new Date(record.date))}</small>
-        </div>
-      ))}
-    </div>
-  </Card>
-);
 
 const RecordsPerLabel = ({
   records,
@@ -350,18 +300,6 @@ const DashboardPage = () => {
       });
   }, [data, chartType, dateInput.value.from, dateInput.value.to]);
 
-  const csvData = useMemo(() => {
-    const headers = ["Date", "Type", "Description", "Amount", "Tag"];
-    const rows = records.map((record) => [
-      record.date,
-      record.type,
-      record.description,
-      record.amount,
-      record.tag.name,
-    ]);
-    return [headers, ...rows];
-  }, [records]);
-
   return (
     <Dashboard>
       <AlertBanner alerts={alerts} />
@@ -407,33 +345,16 @@ const DashboardPage = () => {
             }}
           />
         </Card>
-        <div className="summary-section">
-          <TopCategories
-            topCategories={topCategories}
-            onTagClick={handleTagSelection}
-          />
-          <RecentTransactions recentTransactions={recentTransactions} />
-
-          <CSVLink
-            data={csvData}
-            filename="records.csv"
-            style={{ textDecoration: "none", color: "inherit" }}
-          >
-            <button
-              style={{
-                width: "100%",
-                padding: "20px",
-                background: "#007bff",
-                color: "white",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-              }}
-            >
-              Export Records to CSV
-            </button>
-          </CSVLink>
-        </div>
+        <TopCategories
+          topCategories={topCategories}
+          onTagClick={handleTagSelection}
+          isLoading={isLoading}
+        />
+        <RecentTransactions
+          recentTransactions={recentTransactions}
+          onTransactionClick={handleEditRecord}
+          isLoading={isLoading}
+        />
       </Header>
       <ListsSection>
         <div>
