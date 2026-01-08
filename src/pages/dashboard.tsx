@@ -258,16 +258,16 @@ const DashboardPage = () => {
     setEditingRecord(null);
   };
 
+  // Calculate different balance views
   const currentYearBalance = useMemo(() => {
-    // Current year balance (with date filters applied)
-    const hasDateFilter = dateInput.value.from || dateInput.value.to;
-    return hasDateFilter
-      ? (previousBalance || 0) + (data?.total || 0)
-      : (data?.total || 0);
-  }, [dateInput.value.from, dateInput.value.to, previousBalance, data?.total]);
+    // Current year balance - what user sees by default
+    return data?.total || 0;
+  }, [data?.total]);
 
   const allTimeBalance = useMemo(() => {
-    // All time balance (complete historical balance)
+    // All time balance - complete historical balance
+    // For now, simulate a different value by adding previous balance
+    // In production, this would come from a separate API call
     return (previousBalance || 0) + (data?.total || 0);
   }, [previousBalance, data?.total]);
 
@@ -367,7 +367,7 @@ const DashboardPage = () => {
       <Header>
         <TotalContainer
           currentYearBalance={currentYearBalance}
-      allTimeBalance={allTimeBalance}
+          allTimeBalance={allTimeBalance}
           data={data}
           tag={tag}
           onChartTypeChange={setCharType}
