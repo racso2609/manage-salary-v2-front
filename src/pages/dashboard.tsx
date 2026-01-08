@@ -391,8 +391,8 @@ const DashboardPage = () => {
             isLoading={isLoading}
             onRefresh={mutateDashboard}
             dateRange={{
-              from: dateInput.value.from,
-              to: dateInput.value.to,
+              from: dateInput.value.from ?? "",
+              to: dateInput.value.to ?? "",
             }}
             onDateRangeChange={(range) => {
               dateInput.onChange({

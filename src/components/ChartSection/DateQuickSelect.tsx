@@ -1,7 +1,11 @@
 import { memo, useState } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarAlt, faTimes, faCalendarCheck } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCalendarAlt,
+  faTimes,
+  faCalendarCheck,
+} from "@fortawesome/free-solid-svg-icons";
 import moment from "moment";
 
 const DateQuickSelectContainer = styled.div`
@@ -34,14 +38,16 @@ const QuickSelectGrid = styled.div`
 `;
 
 const QuickSelectButton = styled.button<{ active?: boolean }>`
+  gap: 8px;
+
   padding: 8px 12px;
-  border: 1px solid ${({ theme, active }) =>
-    active ? theme.colors.primary : theme.colors.border};
+  border: 1px solid
+    ${({ theme, active }) =>
+      active ? theme.colors.primary : theme.colors.border};
   border-radius: 6px;
   background: ${({ theme, active }) =>
     active ? theme.colors.primary : theme.colors.surface};
-  color: ${({ theme, active }) =>
-    active ? 'white' : theme.colors.text};
+  color: ${({ theme, active }) => (active ? "white" : theme.colors.text)};
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -178,132 +184,134 @@ interface DateQuickSelectProps {
   onCustomRange: () => void;
 }
 
-const DateQuickSelect = memo(({
-  currentRange,
-  onRangeChange,
-  onCustomRange
-}: DateQuickSelectProps) => {
-  const [showCustomPicker, setShowCustomPicker] = useState(false);
-  const [customFrom, setCustomFrom] = useState(currentRange.from);
-  const [customTo, setCustomTo] = useState(currentRange.to);
-  const today = moment();
+const DateQuickSelect = memo(
+  ({ currentRange, onRangeChange, onCustomRange }: DateQuickSelectProps) => {
+    const [showCustomPicker, setShowCustomPicker] = useState(false);
+    const [customFrom, setCustomFrom] = useState(currentRange.from);
+    const [customTo, setCustomTo] = useState(currentRange.to);
+    const today = moment();
 
-  const presetRanges: DateRange[] = [
-    {
-      from: today.clone().subtract(6, 'days').format('YYYY-MM-DD'),
-      to: today.format('YYYY-MM-DD'),
-      label: 'Last 7 Days'
-    },
-    {
-      from: today.clone().subtract(29, 'days').format('YYYY-MM-DD'),
-      to: today.format('YYYY-MM-DD'),
-      label: 'Last 30 Days'
-    },
-    {
-      from: today.clone().subtract(89, 'days').format('YYYY-MM-DD'),
-      to: today.format('YYYY-MM-DD'),
-      label: 'Last 90 Days'
-    },
-    {
-      from: today.clone().startOf('month').format('YYYY-MM-DD'),
-      to: today.clone().endOf('month').format('YYYY-MM-DD'),
-      label: 'This Month'
-    }
-  ];
+    const presetRanges: DateRange[] = [
+      {
+        from: today.clone().subtract(6, "days").format("YYYY-MM-DD"),
+        to: today.format("YYYY-MM-DD"),
+        label: "Last 7 Days",
+      },
+      {
+        from: today.clone().subtract(29, "days").format("YYYY-MM-DD"),
+        to: today.format("YYYY-MM-DD"),
+        label: "Last 30 Days",
+      },
+      {
+        from: today.clone().subtract(89, "days").format("YYYY-MM-DD"),
+        to: today.format("YYYY-MM-DD"),
+        label: "Last 90 Days",
+      },
+      {
+        from: today.clone().startOf("month").format("YYYY-MM-DD"),
+        to: today.clone().endOf("month").format("YYYY-MM-DD"),
+        label: "This Month",
+      },
+    ];
 
-  const getActiveRange = () => {
-    // Check for preset ranges first
-    const preset = presetRanges.find(range =>
-      range.from === currentRange.from && range.to === currentRange.to
-    );
-    if (preset) return preset;
+    const getActiveRange = () => {
+      // Check for preset ranges first
+      const preset = presetRanges.find(
+        (range) =>
+          range.from === currentRange.from && range.to === currentRange.to,
+      );
+      if (preset) return preset;
 
-    // Check for "All Time" (empty strings)
-    if (currentRange.from === '' && currentRange.to === '') {
-      return { from: '', to: '', label: 'All Time' };
-    }
+      // Check for "All Time" (empty strings)
+      if (currentRange.from === "" && currentRange.to === "") {
+        return { from: "", to: "", label: "All Time" };
+      }
 
-    return null;
-  };
+      return null;
+    };
 
-  const activeRange = getActiveRange();
+    const activeRange = getActiveRange();
 
-  return (
-    <DateQuickSelectContainer>
-      <SectionHeader>
-        <FontAwesomeIcon icon={faCalendarAlt} className="header-icon" />
-        Quick Date Ranges
-      </SectionHeader>
+    return (
+      <DateQuickSelectContainer>
+        <SectionHeader>
+          <FontAwesomeIcon icon={faCalendarAlt} className="header-icon" />
+          Quick Date Ranges
+        </SectionHeader>
 
-      <QuickSelectGrid>
-        {presetRanges.map((range, index) => (
+        <QuickSelectGrid>
+          {presetRanges.map((range, index) => (
+            <QuickSelectButton
+              key={index}
+              active={activeRange?.label === range.label}
+              onClick={() => onRangeChange(range)}
+            >
+              {range.label}
+            </QuickSelectButton>
+          ))}
+
           <QuickSelectButton
-            key={index}
-            active={activeRange?.label === range.label}
-            onClick={() => onRangeChange(range)}
+            onClick={() => setShowCustomPicker(!showCustomPicker)}
           >
-            {range.label}
+            <FontAwesomeIcon icon={faCalendarCheck} />
+            Custom Range
           </QuickSelectButton>
-        ))}
+        </QuickSelectGrid>
 
-        <QuickSelectButton onClick={() => setShowCustomPicker(!showCustomPicker)}>
-          <FontAwesomeIcon icon={faCalendarCheck} />
-          Custom Range
-        </QuickSelectButton>
-      </QuickSelectGrid>
+        {showCustomPicker && (
+          <CustomDatePicker>
+            <DateInputContainer>
+              <DateInput
+                type="date"
+                value={customFrom}
+                onChange={(e) => setCustomFrom(e.target.value)}
+                placeholder="From date"
+              />
+              <span>to</span>
+              <DateInput
+                type="date"
+                value={customTo}
+                onChange={(e) => setCustomTo(e.target.value)}
+                placeholder="To date"
+              />
+              <ApplyButton
+                onClick={() => {
+                  if (customFrom && customTo) {
+                    onRangeChange({
+                      from: customFrom,
+                      to: customTo,
+                      label: "Custom Range",
+                    });
+                    setShowCustomPicker(false);
+                  }
+                }}
+              >
+                Apply
+              </ApplyButton>
+            </DateInputContainer>
+          </CustomDatePicker>
+        )}
 
-      {showCustomPicker && (
-        <CustomDatePicker>
-          <DateInputContainer>
-            <DateInput
-              type="date"
-              value={customFrom}
-              onChange={(e) => setCustomFrom(e.target.value)}
-              placeholder="From date"
-            />
-            <span>to</span>
-            <DateInput
-              type="date"
-              value={customTo}
-              onChange={(e) => setCustomTo(e.target.value)}
-              placeholder="To date"
-            />
-            <ApplyButton
-              onClick={() => {
-                if (customFrom && customTo) {
-                  onRangeChange({
-                    from: customFrom,
-                    to: customTo,
-                    label: 'Custom Range'
-                  });
-                  setShowCustomPicker(false);
-                }
-              }}
-            >
-              Apply
-            </ApplyButton>
-          </DateInputContainer>
-        </CustomDatePicker>
-      )}
+        {activeRange && (
+          <ActiveFilters>
+            <FilterChip>
+              <span className="chip-label">{activeRange.label}</span>
+              <div
+                className="chip-remove"
+                onClick={onCustomRange}
+                title="Clear date filter"
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </div>
+            </FilterChip>
+          </ActiveFilters>
+        )}
+      </DateQuickSelectContainer>
+    );
+  },
+);
 
-      {activeRange && (
-        <ActiveFilters>
-          <FilterChip>
-            <span className="chip-label">{activeRange.label}</span>
-            <div
-              className="chip-remove"
-              onClick={onCustomRange}
-              title="Clear date filter"
-            >
-              <FontAwesomeIcon icon={faTimes} />
-            </div>
-          </FilterChip>
-        </ActiveFilters>
-      )}
-    </DateQuickSelectContainer>
-  );
-});
-
-DateQuickSelect.displayName = 'DateQuickSelect';
+DateQuickSelect.displayName = "DateQuickSelect";
 
 export default DateQuickSelect;
+
