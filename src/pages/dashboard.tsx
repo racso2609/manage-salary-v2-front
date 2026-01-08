@@ -5,7 +5,7 @@ import TagItem from "../components/Tag";
 import RecordItem from "../components/Record";
 import { Card } from "../components/utils/card";
 import useDashboardInfo from "../hooks/fetching/useDashboardInfo";
-import RecordsChart from "../components/RecordsChart";
+
 import { useMemo, useState } from "react";
 import useTag from "../hooks/fetching/useTag";
 import useForm from "../hooks/forms/useForms";
@@ -18,6 +18,7 @@ import { CSVLink } from "react-csv";
 import RecordEditModal from "../components/RecordEditModal";
 import useUpdateRecord from "../hooks/actions/useUpdateRecord";
 import TotalContainer from "../components/TotalContainer";
+import ChartSection from "../components/ChartSection";
 
 const Dashboard = styled.section`
   margin: auto;
@@ -417,10 +418,13 @@ const DashboardPage = () => {
           className="chart-section"
           padding="10px"
         >
-          <>
-            <h2>{chartType === "in" ? "Incomming" : "Outgoing"}</h2>
-            <RecordsChart records={records} onTagClick={handleTagSelection} />
-          </>
+          <ChartSection
+            records={records}
+            chartType={chartType as 'in' | 'out'}
+            onTagClick={handleTagSelection}
+            isLoading={isLoading}
+            onRefresh={mutateDashboard}
+          />
 
           <DateFilterSection>
             <p>from date</p>
