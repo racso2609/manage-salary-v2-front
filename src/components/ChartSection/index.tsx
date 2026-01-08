@@ -212,7 +212,7 @@ const ChartContainer = styled.div`
 
 interface ChartSectionProps {
   records: Record[];
-  chartType: 'in' | 'out';
+  chartType: "in" | "out";
   onTagClick?: (tagId: string) => void;
   isLoading?: boolean;
   onRefresh?: () => void;
@@ -230,7 +230,7 @@ const ChartSection = memo(
     isLoading = false,
     onRefresh,
     dateRange,
-    onDateRangeChange
+    onDateRangeChange,
   }: ChartSectionProps) => {
     const [selectedChartType, setSelectedChartType] =
       useState<ChartType>("pie");
@@ -278,15 +278,24 @@ const ChartSection = memo(
     const chartTitle =
       chartType === "in" ? "Income Breakdown" : "Expense Breakdown";
 
-  const handleRefresh = () => {
-    onRefresh?.();
-  };
+    const handleRefresh = () => {
+      onRefresh?.();
+    };
 
   const handleItemClick = (item: any) => {
     if (item?.dataIndex !== undefined && formattedData[item.dataIndex]) {
-      setSelectedItem(selectedItem?.dataIndex === item.dataIndex ? null : formattedData[item.dataIndex]);
+      const clickedItem = formattedData[item.dataIndex];
+      const tagId = clickedItem.id;
+
+      // Toggle selection - if same tag is clicked, clear selection
+      if (selectedItem?.id === tagId) {
+        setSelectedItem(null);
+        onTagClick?.(""); // Clear the filter
+      } else {
+        setSelectedItem(clickedItem);
+        onTagClick?.(tagId);
+      }
     }
-    onTagClick?.(item.dataIndex?.toString() || "");
   };
 
     return (
@@ -321,12 +330,12 @@ const ChartSection = memo(
               </button>
             </ChartTypeToggle>
 
-          <ChartControls>
-            <button className="control-button" onClick={handleRefresh}>
-              <FontAwesomeIcon icon={faSync} />
-              Refresh
-            </button>
-          </ChartControls>
+            <ChartControls>
+              <button className="control-button" onClick={handleRefresh}>
+                <FontAwesomeIcon icon={faSync} />
+                Refresh
+              </button>
+            </ChartControls>
           </div>
         </ChartHeader>
 
@@ -338,6 +347,7 @@ const ChartSection = memo(
               {selectedChartType === "pie" ? (
                 <PieChart
                   height={250}
+                  hideLegend
                   series={[
                     {
                       data: formattedData,
@@ -364,7 +374,7 @@ const ChartSection = memo(
                       color: "#2196f3",
                     },
                   ]}
-                onItemClick={(_, item) => handleItemClick(item)}
+                  onItemClick={(_, item) => handleItemClick(item)}
                 />
               )}
             </div>
@@ -377,17 +387,17 @@ const ChartSection = memo(
         />
 
         <DateQuickSelect
-            currentRange={dateRange}
-            onRangeChange={onDateRangeChange}
-            onCustomRange={() => {
-              // Reset to show all data (remove date filter)
-              onDateRangeChange({
-                from: '',
-                to: '',
-                label: 'All Time'
-              });
-            }}
-          />
+          currentRange={dateRange}
+          onRangeChange={onDateRangeChange}
+          onCustomRange={() => {
+            // Reset to show all data (remove date filter)
+            onDateRangeChange({
+              from: "",
+              to: "",
+              label: "All Time",
+            });
+          }}
+        />
 
         <ChartInsights
           records={records}
@@ -408,6 +418,10 @@ const ChartSection = memo(
             dateRange={dateRange}
             chartType={chartType}
             position={{ x: window.innerWidth / 2, y: window.innerHeight / 2 }}
+            onClear={() => {
+              setSelectedItem(null);
+              onTagClick?.("");
+            }}
           />
         )}
       </ChartSectionContainer>
@@ -418,4 +432,3 @@ const ChartSection = memo(
 ChartSection.displayName = "ChartSection";
 
 export default ChartSection;
-

@@ -121,6 +121,7 @@ interface ChartTooltipProps {
   dateRange: { from: string; to: string };
   chartType: 'in' | 'out';
   position?: { x: number; y: number };
+  onClear?: () => void;
 }
 
 const ChartTooltip = memo(({
@@ -128,7 +129,8 @@ const ChartTooltip = memo(({
   total,
   dateRange,
   chartType,
-  position
+  position,
+  onClear
 }: ChartTooltipProps) => {
   const percentage = useMemo(() => {
     return total > 0 ? ((data.value / total) * 100).toFixed(1) : '0.0';
@@ -189,8 +191,28 @@ const ChartTooltip = memo(({
       </div>
 
       <div className="tooltip-footer">
-        <FontAwesomeIcon icon={faInfoCircle} style={{ marginRight: '4px' }} />
-        Click to filter by this category
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+          <span>
+            <FontAwesomeIcon icon={faInfoCircle} style={{ marginRight: '4px' }} />
+            Filtered by category
+          </span>
+          {onClear && (
+            <button
+              onClick={onClear}
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(255,255,255,0.3)',
+                color: 'white',
+                padding: '2px 6px',
+                borderRadius: '3px',
+                fontSize: '10px',
+                cursor: 'pointer'
+              }}
+            >
+              Clear Filter
+            </button>
+          )}
+        </div>
       </div>
     </TooltipContainer>
   );
