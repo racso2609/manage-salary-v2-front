@@ -16,7 +16,7 @@ type propsType = {
 const useDashboardInfo = ({ tag, from, to }: propsType = {}) => {
   const { sessionToken } = useAuthContext();
 
-  const { data, mutate } = useSWR<{
+  const { data, mutate, isValidating } = useSWR<{
     total: number;
     subTotal: Record<string, number>;
     records: Record<
@@ -107,6 +107,7 @@ const useDashboardInfo = ({ tag, from, to }: propsType = {}) => {
     data,
     previousBalance: previousBalanceData?.total || 0,
     mutate,
+    isLoading: isValidating,
   };
 };
 

@@ -1,3 +1,4 @@
+import "../theme/types";
 import styled from "styled-components";
 import useTags from "../hooks/fetching/useTags";
 import TagItem from "../components/Tag";
@@ -16,6 +17,7 @@ import { Record } from "../types/manageSalaryTypes/records";
 import { CSVLink } from "react-csv";
 import RecordEditModal from "../components/RecordEditModal";
 import useUpdateRecord from "../hooks/actions/useUpdateRecord";
+import TotalContainer from "../components/TotalContainer";
 
 const Dashboard = styled.section`
   margin: auto;
@@ -27,7 +29,6 @@ const Dashboard = styled.section`
 
   h2 {
     margin-top: 0;
-    // margin-bottom: 0;
   }
 `;
 
@@ -41,61 +42,18 @@ const ItemsLayout = styled.div`
   overflow-y: auto;
 `;
 
-const ListsSection = styled.section`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  justify-content: space-around;
-`;
-
 const Header = styled.header`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   padding: 10px 0px;
   gap: 20px;
+`;
 
-  p {
-    margin: 0;
-  }
-
-  .total-section {
-    display: flex;
-    justify-content: space-between;
-  }
-
-  [data-profit="true"] {
-    color: green;
-  }
-
-  [data-profit="false"] {
-    color: red;
-  }
-
-  .subtotal-section {
-    display: flex;
-    h3 {
-      margin: 0;
-    }
-    h3:last-child {
-      margin-left: 25px;
-    }
-  }
-
-  .total-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-
-  .chart-section {
-    // display: flex;
-  }
-
-  .summary-section {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
+const ListsSection = styled.section`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  justify-content: space-around;
 `;
 
 const DateFilterSection = styled.section`
@@ -260,54 +218,55 @@ const DashboardPage = () => {
     data,
     previousBalance,
     mutate: mutateDashboard,
+    isLoading,
   } = useDashboardInfo({
     tag: selectedTag,
     from: dateInput.value.from,
     to: dateInput.value.to,
   });
 
-const [chartType, setCharType] = useState<string>("out");
-const { data: tag } = useTag({ tagId: selectedTag ?? "" });
+  const [chartType, setCharType] = useState<string>("out");
+  const { data: tag } = useTag({ tagId: selectedTag ?? "" });
 
-const [editingRecord, setEditingRecord] = useState<Record | null>(null);
-const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<Record | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
-const { handleUpdateRecord } = useUpdateRecord({
-  handlers: {
-    onSuccess: () => {
-      mutateDashboard();
+  const { handleUpdateRecord } = useUpdateRecord({
+    handlers: {
+      onSuccess: () => {
+        mutateDashboard();
+      },
+      onError: (err) => {
+        console.error(err);
+      },
     },
-    onError: (err) => {
-      console.error(err);
-    },
-  },
-});
+  });
 
   const handleDelete = (tagId?: string) => {
     if (tagId) mutateTags((data) => data?.filter((t) => t._id !== tagId));
     mutateDashboard();
   };
 
-const handleTagSelection = (tagId: string) => {
-  if (selectedTag === tagId) {
-    setSelectedTag(undefined);
-    return;
-  }
+  const handleTagSelection = (tagId: string) => {
+    if (selectedTag === tagId) {
+      setSelectedTag(undefined);
+      return;
+    }
 
-  setSelectedTag(tagId);
-};
+    setSelectedTag(tagId);
+  };
 
-const handleEditRecord = (record: Record) => {
-  setEditingRecord(record);
-  setEditModalOpen(true);
-};
+  const handleEditRecord = (record: Record) => {
+    setEditingRecord(record);
+    setEditModalOpen(true);
+  };
 
-const handleSaveEdit = (data: Partial<Omit<Record, "tag"> & { tag: string }>) => {
-  if (!editingRecord) return;
-  handleUpdateRecord(editingRecord._id, data);
-  setEditModalOpen(false);
-  setEditingRecord(null);
-};
+  const handleSaveEdit = (data: Partial<Omit<Record, "tag"> & { tag: string }>) => {
+    if (!editingRecord) return;
+    handleUpdateRecord(editingRecord._id, data);
+    setEditModalOpen(false);
+    setEditingRecord(null);
+  };
 
   const handleDate = (date: string, type: "from" | "to") => {
     console.log(date);
@@ -440,41 +399,17 @@ const handleSaveEdit = (data: Partial<Omit<Record, "tag"> & { tag: string }>) =>
     <Dashboard>
       <AlertBanner alerts={alerts} />
       <Header>
-        <Card
-          background="gray"
-          width={"100%"}
-          radius="10px"
-          className="total-container"
-        >
-          <section className="total-section">
-            <h2>Account Balance:</h2>
-            <h2 data-profit={accountBalance > 0}>
-              {formatNumber(accountBalance)} USD
-            </h2>
-          </section>
-          <section>
-            {Object.keys({
-              in: data?.subTotal.in,
-              out: data?.subTotal?.out,
-            }).map((type) => {
-              return (
-                <div
-                  className="subtotal-section"
-                  onClick={() => {
-                    if (data?.subTotal?.[type]) setCharType(type);
-                  }}
-                  key={type}
-                >
-                  <h3>{type}:</h3>
-                  <h3 data-profit={type === "in"}>
-                    {formatNumber(data?.subTotal?.[type] || 0)}
-                  </h3>
-                </div>
-              );
-            })}
-            <h3>Selected Tag: {tag?.name || "ALL"}</h3>
-          </section>
-        </Card>
+        <TotalContainer
+          accountBalance={accountBalance}
+          data={data}
+          tag={tag}
+          onChartTypeChange={setCharType}
+          isLoading={isLoading}
+          dateRange={{
+            from: dateInput.value.from,
+            to: dateInput.value.to
+          }}
+        />
         <Card
           background="gray"
           width={"100%"}
