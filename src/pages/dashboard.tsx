@@ -45,7 +45,7 @@ const ItemsLayout = styled.div`
 
 const Header = styled.header`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
   padding: 10px 0px;
   gap: 20px;
 `;
@@ -192,7 +192,12 @@ const RecordsPerLabel = ({
         </Card>
         {isOpenLabel[date] &&
           records.records.map((record) => (
-            <RecordItem key={record._id} record={record} onDelete={onDelete} onEdit={onEdit} />
+            <RecordItem
+              key={record._id}
+              record={record}
+              onDelete={onDelete}
+              onEdit={onEdit}
+            />
           ))}
       </>
     );
@@ -262,7 +267,9 @@ const DashboardPage = () => {
     setEditModalOpen(true);
   };
 
-  const handleSaveEdit = (data: Partial<Omit<Record, "tag"> & { tag: string }>) => {
+  const handleSaveEdit = (
+    data: Partial<Omit<Record, "tag"> & { tag: string }>,
+  ) => {
     if (!editingRecord) return;
     handleUpdateRecord(editingRecord._id, data);
     setEditModalOpen(false);
@@ -408,7 +415,7 @@ const DashboardPage = () => {
           isLoading={isLoading}
           dateRange={{
             from: dateInput.value.from,
-            to: dateInput.value.to
+            to: dateInput.value.to,
           }}
         />
         <Card
@@ -420,10 +427,24 @@ const DashboardPage = () => {
         >
           <ChartSection
             records={records}
-            chartType={chartType as 'in' | 'out'}
+            chartType={chartType as "in" | "out"}
             onTagClick={handleTagSelection}
             isLoading={isLoading}
             onRefresh={mutateDashboard}
+            dateRange={{
+              from: dateInput.value.from,
+              to: dateInput.value.to,
+            }}
+            onDateRangeChange={(range) => {
+              dateInput.onChange({
+                target: {
+                  value: {
+                    from: range.from,
+                    to: range.to,
+                  },
+                },
+              });
+            }}
           />
 
           <DateFilterSection>
@@ -474,7 +495,13 @@ const DashboardPage = () => {
         <div>
           <h2>Records</h2>
           <ItemsLayout>
-            {<RecordsPerLabel records={data?.records ?? {}} onDelete={handleDelete} onEdit={handleEditRecord} />}
+            {
+              <RecordsPerLabel
+                records={data?.records ?? {}}
+                onDelete={handleDelete}
+                onEdit={handleEditRecord}
+              />
+            }
           </ItemsLayout>
         </div>
         <div>
@@ -504,3 +531,4 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
+

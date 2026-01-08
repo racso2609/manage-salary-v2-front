@@ -8,6 +8,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { PieChart, BarChart } from "@mui/x-charts";
 import { Record } from "../../types/manageSalaryTypes/records";
+import DateQuickSelect, { DateRange } from "./DateQuickSelect";
 
 const ChartSectionContainer = styled.div`
   display: flex;
@@ -133,6 +134,12 @@ const ChartControls = styled.div`
     &:active {
       transform: translateY(1px);
     }
+
+    &.active {
+      background: ${({ theme }) => theme.colors.primary};
+      color: white;
+      border-color: ${({ theme }) => theme.colors.primary};
+    }
   }
 `;
 
@@ -201,10 +208,12 @@ const ChartContainer = styled.div`
 
 interface ChartSectionProps {
   records: Record[];
-  chartType: "in" | "out";
+  chartType: 'in' | 'out';
   onTagClick?: (tagId: string) => void;
   isLoading?: boolean;
   onRefresh?: () => void;
+  dateRange: { from: string; to: string };
+  onDateRangeChange: (range: DateRange) => void;
 }
 
 type ChartType = "pie" | "bar";
@@ -216,6 +225,8 @@ const ChartSection = memo(
     onTagClick,
     isLoading = false,
     onRefresh,
+    dateRange,
+    onDateRangeChange
   }: ChartSectionProps) => {
     const [selectedChartType, setSelectedChartType] =
       useState<ChartType>("pie");
@@ -298,12 +309,12 @@ const ChartSection = memo(
               </button>
             </ChartTypeToggle>
 
-            <ChartControls>
-              <button className="control-button" onClick={handleRefresh}>
-                <FontAwesomeIcon icon={faSync} />
-                Refresh
-              </button>
-            </ChartControls>
+          <ChartControls>
+            <button className="control-button" onClick={handleRefresh}>
+              <FontAwesomeIcon icon={faSync} />
+              Refresh
+            </button>
+          </ChartControls>
           </div>
         </ChartHeader>
 
@@ -354,6 +365,15 @@ const ChartSection = memo(
             </div>
           )}
         </ChartContainer>
+
+        <DateQuickSelect
+          currentRange={dateRange}
+          onRangeChange={onDateRangeChange}
+          onCustomRange={() => {
+            // For now, just trigger a refresh or could open custom date picker
+            onRefresh?.();
+          }}
+        />
       </ChartSectionContainer>
     );
   },
