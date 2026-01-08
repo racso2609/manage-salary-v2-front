@@ -21,6 +21,7 @@
     "@mui/material": "7.3.6",
     "@mui/styled-engine": "7.3.6",
     "@mui/x-charts": "^7.29.1",
+    "@types/react-csv": "^1.1.10",
     "jotai": "^2.16.1",
     "moment": "^2.30.1",
     "normalize.css": "^8.0.1",
