@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-} from "@mui/material";
+import Modal from "./ui/Modal";
+import TextField from "./ui/TextField";
+import SelectField from "./ui/SelectField";
 import moment from "moment";
 import { Record } from "../types/manageSalaryTypes/records";
 import useTags from "../hooks/fetching/useTags";
@@ -69,69 +60,64 @@ const RecordEditModal: React.FC<RecordEditModalProps> = ({
     });
   };
 
+  const actions = [
+    { label: "Cancel", onClick: onClose },
+    { label: "Save", onClick: handleSubmit, variant: "primary" as const },
+  ];
+
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Edit Record</DialogTitle>
-      <DialogContent>
-        <FormControl fullWidth margin="dense">
-          <InputLabel>Type</InputLabel>
-          <Select
-            value={formData.type}
-            onChange={(e) =>
-              setFormData({ ...formData, type: e.target.value as "in" | "out" })
-            }
-          >
-            <MenuItem value="in">In</MenuItem>
-            <MenuItem value="out">Out</MenuItem>
-          </Select>
-        </FormControl>
-        <TextField
-          fullWidth
-          margin="dense"
-          label="Description"
-          value={formData.description}
-          onChange={(e) =>
-            setFormData({ ...formData, description: e.target.value })
-          }
-        />
-        <TextField
-          fullWidth
-          margin="dense"
-          label="Amount"
-          type="number"
-          value={formData.amount}
-          onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-        />
-        <TextField
-          fullWidth
-          margin="dense"
-          label="Date"
-          type="date"
-          InputLabelProps={{ shrink: true }}
-          value={formData.date}
-          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-        />
-        <FormControl fullWidth margin="dense">
-          <InputLabel>Tag</InputLabel>
-          <Select
-            value={formData.tag}
-            onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
-          >
-            {tags?.map((tag) => (
-              <MenuItem key={tag._id} value={tag._id}>
-                {tag.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained">
-          Save
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <Modal isOpen={open} title="Edit Record" onClose={onClose} actions={actions}>
+      <SelectField
+        label="Type"
+        value={formData.type}
+        onChange={(e) =>
+          setFormData({ ...formData, type: e.target.value as "in" | "out" })
+        }
+        fullWidth
+        margin="dense"
+      >
+        <option value="in">In</option>
+        <option value="out">Out</option>
+      </SelectField>
+      <TextField
+        label="Description"
+        value={formData.description}
+        onChange={(e) =>
+          setFormData({ ...formData, description: e.target.value })
+        }
+        fullWidth
+        margin="dense"
+      />
+      <TextField
+        label="Amount"
+        type="number"
+        value={formData.amount}
+        onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+        fullWidth
+        margin="dense"
+      />
+      <TextField
+        label="Date"
+        type="date"
+        value={formData.date}
+        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+        fullWidth
+        margin="dense"
+      />
+      <SelectField
+        label="Tag"
+        value={formData.tag}
+        onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
+        fullWidth
+        margin="dense"
+      >
+        {tags?.map((tag) => (
+          <option key={tag._id} value={tag._id}>
+            {tag.name}
+          </option>
+        ))}
+      </SelectField>
+    </Modal>
   );
 };
 

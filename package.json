@@ -10,17 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-brands-svg-icons": "^6.7.2",
     "@fortawesome/free-regular-svg-icons": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.6",
-    "@mui/icons-material": "7.3.6",
-    "@mui/material": "7.3.6",
-    "@mui/styled-engine": "7.3.6",
-    "@mui/x-charts": "^7.29.1",
     "@types/react-csv": "^1.1.10",
     "jotai": "^2.16.1",
     "moment": "^2.30.1",
