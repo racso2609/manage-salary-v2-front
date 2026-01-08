@@ -331,10 +331,13 @@ const DashboardPage = () => {
         return true;
       })
       .filter((record) => {
-        // datefilter
+        // datefilter - if no date range specified, show all records
+        if (!dateInput.value.from && !dateInput.value.to) {
+          return true;
+        }
         return moment(record.date).isBetween(
-          dateInput.value.from || 0,
-          dateInput.value.to || moment(),
+          dateInput.value.from || moment().subtract(100, 'years'),
+          dateInput.value.to || moment().add(100, 'years'),
         );
       });
   }, [data, chartType, dateInput.value.from, dateInput.value.to]);
