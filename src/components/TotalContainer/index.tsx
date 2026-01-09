@@ -15,7 +15,7 @@ import {
 import { Card } from "../utils/card";
 import { formatNumber } from "../../utils/formatter/numbers";
 import moment from "moment";
-import useAnalytics from "../../hooks/fetching/useAnalytics";
+import useInsights from "../../hooks/fetching/useInsights";
 
 const Header = styled.header`
   display: grid;
@@ -583,6 +583,14 @@ interface TotalContainerProps {
     from: string;
     to: string;
   };
+  dashboardData?: {
+    totals: {
+      income: string;
+      expenses: string;
+      savingsRate: number;
+      balance: string;
+    };
+  };
 }
 
 const TotalContainer = memo(
@@ -594,22 +602,26 @@ const TotalContainer = memo(
     onChartTypeChange,
     isLoading,
     dateRange,
+    dashboardData,
   }: TotalContainerProps) => {
-    const { data: analytics } = useAnalytics({ from: dateRange.from, to: dateRange.to });
+    const { data: insights } = useInsights({ from: dateRange.from, to: dateRange.to });
     const [showAllTimeBalance, setShowAllTimeBalance] = useState(false);
 
     // Memoize expensive calculations
     const metrics = useMemo(() => {
-      const income = data?.subTotal?.in || 0;
-      const expenses = data?.subTotal?.out || 0;
+      const income = dashboardData ? Number(dashboardData.totals.income) / 100 : 0;
+      const expenses = dashboardData ? Number(dashboardData.totals.expenses) / 100 : 0;
       const netFlow = income - expenses;
-      const savingsRate = income > 0 ? (netFlow / income) * 100 : 0;
+      const savingsRate = dashboardData?.totals.savingsRate || 0;
 
       // Calculate number of days in the current period
       const startDate = moment(dateRange.from || moment().startOf("year"));
       const endDate = moment(dateRange.to || moment().endOf("year"));
       const daysInPeriod = Math.max(1, endDate.diff(startDate, "days") + 1);
-      const dailyAverage = analytics?.dailyAverage || expenses / daysInPeriod;
+
+      // Get daily average from insights patterns or calculate
+      const dailyAverage = insights?.patterns && insights.patterns.length > 0 && insights.patterns[0].data && insights.patterns[0].data.length > 0
+        ? insights.patterns[0].data[0] : expenses / daysInPeriod;
 
       return {
         income,
@@ -619,7 +631,7 @@ const TotalContainer = memo(
         daysInPeriod,
         dailyAverage,
       };
-    }, [data?.subTotal?.in, data?.subTotal?.out, dateRange.from, dateRange.to, analytics?.dailyAverage]);
+    }, [dashboardData, insights, dateRange.from, dateRange.to]);
 
     const {
       income,
