@@ -13,6 +13,14 @@ export const Layout = styled.main`
   min-height: calc(100vh - 60px);
   overflow-y: auto;
   padding: 20px;
+
+  @media (max-width: 768px) {
+    padding: 16px 12px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px 8px;
+  }
 `;
 
 const MainLayout: FC = () => {

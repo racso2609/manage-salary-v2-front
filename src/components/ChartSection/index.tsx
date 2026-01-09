@@ -65,13 +65,33 @@ const ChartHeader = styled.div`
     flex-direction: column;
     gap: 16px;
     align-items: stretch;
+    padding: 12px 16px;
 
     .header-left {
       justify-content: center;
+
+      .chart-title {
+        font-size: 16px;
+      }
     }
 
     .header-right {
       justify-content: center;
+      gap: 8px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px 12px;
+    gap: 12px;
+
+    .header-left .chart-title {
+      font-size: 15px;
+    }
+
+    .header-right .toggle-button {
+      padding: 6px 12px;
+      font-size: 13px;
     }
   }
 `;
@@ -206,6 +226,14 @@ const ChartContainer = styled.div`
 
     .chart-wrapper {
       min-height: 200px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px;
+
+    .chart-wrapper {
+      min-height: 180px;
     }
   }
 `;

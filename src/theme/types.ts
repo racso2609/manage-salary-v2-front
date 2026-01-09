@@ -23,6 +23,33 @@ declare module "styled-components" {
         large: string;
         xlarge: string;
       };
+      responsive: {
+        h1: {
+          desktop: string;
+          tablet: string;
+          mobile: string;
+        };
+        h2: {
+          desktop: string;
+          tablet: string;
+          mobile: string;
+        };
+        h3: {
+          desktop: string;
+          tablet: string;
+          mobile: string;
+        };
+        body: {
+          desktop: string;
+          tablet: string;
+          mobile: string;
+        };
+        small: {
+          desktop: string;
+          tablet: string;
+          mobile: string;
+        };
+      };
       weight: {
         normal: number;
         bold: number;

@@ -12,8 +12,6 @@ import {
   faFire,
   faCalendarDay,
   faTags,
-  faLightbulb,
-  faExclamationTriangle,
 } from "@fortawesome/free-solid-svg-icons";
 import styled from "styled-components";
 import { Card } from "./utils/card";
@@ -107,16 +105,13 @@ const InsightCard = styled(Card)`
 
 interface SpendingInsightsProps {
   dateRange: { from: string; to: string };
-  isLoading?: boolean;
 }
 
 const SpendingInsights = ({
   dateRange,
-  isLoading = false,
 }: SpendingInsightsProps) => {
   const {
     data: analytics,
-    isLoading: analyticsLoading,
     error,
   } = useAnalytics({ from: dateRange.from, to: dateRange.to });
 

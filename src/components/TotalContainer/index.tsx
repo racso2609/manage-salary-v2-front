@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useState } from "react";
+import React, { FC, memo, useMemo, useState } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -10,12 +10,13 @@ import {
   faCalendarDay,
   faToggleOn,
   faToggleOff,
-  faCoins
+  faCoins,
 } from "@fortawesome/free-solid-svg-icons";
 import { Card } from "../utils/card";
 import { formatNumber } from "../../utils/formatter/numbers";
 import moment from "moment";
 import useInsights from "../../hooks/fetching/useInsights";
+import Button from "../ui/Button";
 
 const Header = styled.header`
   display: grid;
@@ -66,98 +67,6 @@ const Header = styled.header`
       margin-bottom: 12px;
       padding-bottom: 8px;
       border-bottom: 1px solid ${({ theme }) => theme.colors.borderLight};
-    }
-
-    .balance-section {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      padding: 20px;
-      background: linear-gradient(
-        135deg,
-        ${({ theme }) => theme.colors.primary}10,
-        ${({ theme }) => theme.colors.secondary}10
-      );
-      border-radius: 12px;
-      border: 1px solid ${({ theme }) => theme.colors.primary}20;
-
-      .icon-container {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: ${({ theme }) => theme.colors.primary};
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-      }
-
-      .balance-content {
-        text-align: center;
-
-        .balance-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 8px;
-
-          .balance-label {
-            font-size: 16px;
-            color: ${({ theme }) => theme.colors.textSecondary};
-            margin: 0;
-          }
-
-          .balance-toggle {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 8px;
-            border: 1px solid ${({ theme }) => theme.colors.border};
-            border-radius: 16px;
-            background: ${({ theme }) => theme.colors.surface};
-            color: ${({ theme }) => theme.colors.textSecondary};
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-
-            &:hover {
-              background: ${({ theme }) => theme.colors.primary}10;
-              border-color: ${({ theme }) => theme.colors.primary};
-              color: ${({ theme }) => theme.colors.primary};
-            }
-
-            .toggle-text {
-              font-weight: 500;
-            }
-          }
-        }
-
-        .balance-amount {
-          font-size: 32px;
-          font-weight: 700;
-          margin: 0 0 4px 0;
-          color: ${({ theme }) => theme.colors.text};
-        }
-
-        .balance-subtitle {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-          font-size: 12px;
-          color: ${({ theme }) => theme.colors.textSecondary};
-          margin: 0;
-          opacity: 0.8;
-        }
-      }
-
-        .balance-amount {
-          font-size: 32px;
-          font-weight: 700;
-          margin: 0;
-          color: ${({ theme }) => theme.colors.text};
-        }
-      }
     }
 
     .flow-section {
@@ -481,29 +390,79 @@ const Header = styled.header`
     }
 
     /* Responsive Design */
+    @media (max-width: 1024px) {
+      .balance-section .balance-content .balance-amount {
+        font-size: 30px;
+      }
+
+      .flow-section .metric-row {
+        .metric-left .metric-label {
+          font-size: 16px;
+        }
+
+        .metric-right .metric-amount {
+          font-size: 17px;
+        }
+      }
+    }
+
     @media (max-width: 768px) {
       padding: 16px;
 
       .balance-section {
         padding: 16px;
+        margin-bottom: 16px;
 
-        .balance-content .balance-amount {
-          font-size: 28px;
+        .balance-content {
+          .balance-amount {
+            font-size: 28px;
+          }
+
+          .balance-subtitle {
+            font-size: 11px;
+          }
+        }
+
+        .balance-toggle {
+          padding: 3px 6px;
+          font-size: 11px;
         }
       }
 
       .flow-section {
         gap: 12px;
 
-        .metric-row {
-          padding: 14px 16px;
-
-          .metric-left .metric-label {
-            font-size: 15px;
+        .flow-header {
+          .flow-title {
+            font-size: 17px;
           }
 
-          .metric-right .metric-amount {
-            font-size: 16px;
+          .flow-summary {
+            font-size: 13px;
+          }
+        }
+
+        .metric-row {
+          padding: 14px 16px;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+
+          .metric-left {
+            width: 100%;
+
+            .metric-label {
+              font-size: 15px;
+            }
+          }
+
+          .metric-right {
+            width: 100%;
+            text-align: left;
+
+            .metric-amount {
+              font-size: 16px;
+            }
           }
         }
       }
@@ -517,6 +476,9 @@ const Header = styled.header`
           .progress-label {
             font-size: 15px;
             margin-bottom: 12px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
           }
         }
 
@@ -547,6 +509,10 @@ const Header = styled.header`
       .filter-section {
         padding: 14px 16px;
 
+        .filter-label {
+          font-size: 13px;
+        }
+
         .filter-value {
           font-size: 16px;
         }
@@ -554,12 +520,54 @@ const Header = styled.header`
     }
 
     @media (max-width: 480px) {
-      .balance-section .balance-content .balance-amount {
-        font-size: 24px;
+      padding: 12px;
+
+      .balance-section {
+        padding: 12px;
+
+        .balance-content .balance-amount {
+          font-size: 24px;
+        }
+
+        .balance-toggle {
+          padding: 2px 4px;
+          font-size: 10px;
+        }
       }
 
       .additional-metrics-section {
         grid-template-columns: 1fr;
+        gap: 8px;
+
+        .metric-card {
+          padding: 12px 8px;
+
+          .metric-icon {
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+          }
+
+          .metric-label {
+            font-size: 11px;
+          }
+
+          .metric-value {
+            font-size: 14px;
+          }
+        }
+      }
+
+      .flow-section .metric-row {
+        padding: 12px;
+
+        .metric-label {
+          font-size: 14px;
+        }
+
+        .metric-amount {
+          font-size: 15px;
+        }
       }
     }
   }
@@ -593,10 +601,162 @@ interface TotalContainerProps {
   };
 }
 
+const BalanceContainer = styled.section`
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 20px;
+      background: linear-gradient(
+        135deg,
+        ${({ theme }) => theme.colors.primary}10,
+        ${({ theme }) => theme.colors.secondary}10
+      );
+      border-radius: 12px;
+      border: 1px solid ${({ theme }) => theme.colors.primary}20;
+
+
+.left-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+
+      .icon-container {
+        width: 40px;
+        height: 40px;
+        border-radius: 100%;
+        background: ${({ theme }) => theme.colors.primary};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+      }
+}
+
+     
+
+        .balance-header {
+          display: flex;
+        flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 8px;
+
+
+          .balance-label {
+            font-size: 16px;
+            color: ${({ theme }) => theme.colors.textSecondary};
+            margin: 0;
+          }
+
+          .balance-toggle {
+
+            background: ${({ theme }) => theme.colors.primary};
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 16px;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background: ${({ theme }) => theme.colors.primary}10;
+              border-color: ${({ theme }) => theme.colors.primary};
+              color: ${({ theme }) => theme.colors.primary};
+            }
+
+            .toggle-text {
+              font-weight: 500;
+            }
+          }
+
+        .balance-amount {
+          font-size: 32px;
+          font-weight: 700;
+          margin: 0 0 4px 0;
+          color: ${({ theme }) => theme.colors.text};
+        }
+
+        .balance-subtitle {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          font-size: 12px;
+          color: ${({ theme }) => theme.colors.textSecondary};
+          margin: 0;
+          opacity: 0.8;
+        }
+      }
+
+        .balance-amount {
+          font-size: 32px;
+          font-weight: 700;
+          margin: 0;
+          color: ${({ theme }) => theme.colors.text};
+        }
+    }
+
+    @media (max-width: 1024px) {
+        font-size: 30px;
+       .balance-content .balance-amount {
+        font-size: 30px;
+      }
+    }
+
+
+
+`;
+
+export const BalanceSection: FC<{
+  currentYearBalance: number;
+  allTimeBalance: number;
+}> = ({ currentYearBalance, allTimeBalance }) => {
+  const [showAllTimeBalance, setShowAllTimeBalance] = useState(false);
+  return (
+    <BalanceContainer>
+      <div className="balance-header">
+        <div className="left-section">
+          <div className="icon-container">
+            <FontAwesomeIcon icon={faWallet} />
+          </div>
+          <span className="balance-label">
+            {showAllTimeBalance ? "All Time Balance" : "Current Year Balance"}
+          </span>
+        </div>
+        <span
+          onClick={() => setShowAllTimeBalance(!showAllTimeBalance)}
+          className="balance-toggle"
+        >
+          {" "}
+          <FontAwesomeIcon
+            icon={showAllTimeBalance ? faToggleOn : faToggleOff}
+          />
+          <span className="toggle-text">
+            {showAllTimeBalance ? "All Time" : "This Year"}
+          </span>
+        </span>
+      </div>
+
+      <h2
+        className="balance-amount"
+        data-profit={
+          (showAllTimeBalance ? allTimeBalance : currentYearBalance) > 0
+        }
+      >
+        {formatNumber(showAllTimeBalance ? allTimeBalance : currentYearBalance)}{" "}
+        USD
+      </h2>
+    </BalanceContainer>
+  );
+};
+
 const TotalContainer = memo(
   ({
-    currentYearBalance,
-    allTimeBalance,
     data,
     tag,
     onChartTypeChange,
@@ -604,13 +764,19 @@ const TotalContainer = memo(
     dateRange,
     dashboardData,
   }: TotalContainerProps) => {
-    const { data: insights } = useInsights({ from: dateRange.from, to: dateRange.to });
-    const [showAllTimeBalance, setShowAllTimeBalance] = useState(false);
+    const { data: insights } = useInsights({
+      from: dateRange.from,
+      to: dateRange.to,
+    });
 
     // Memoize expensive calculations
     const metrics = useMemo(() => {
-      const income = dashboardData ? Number(dashboardData.totals.income) / 100 : 0;
-      const expenses = dashboardData ? Number(dashboardData.totals.expenses) / 100 : 0;
+      const income = dashboardData
+        ? Number(dashboardData.totals.income) / 100
+        : 0;
+      const expenses = dashboardData
+        ? Number(dashboardData.totals.expenses) / 100
+        : 0;
       const netFlow = income - expenses;
       const savingsRate = dashboardData?.totals.savingsRate || 0;
 
@@ -620,8 +786,13 @@ const TotalContainer = memo(
       const daysInPeriod = Math.max(1, endDate.diff(startDate, "days") + 1);
 
       // Get daily average from insights patterns or calculate
-      const dailyAverage = insights?.patterns && insights.patterns.length > 0 && insights.patterns[0].data && insights.patterns[0].data.length > 0
-        ? insights.patterns[0].data[0] : expenses / daysInPeriod;
+      const dailyAverage =
+        insights?.patterns &&
+        insights.patterns.length > 0 &&
+        insights.patterns[0].data &&
+        insights.patterns[0].data.length > 0
+          ? insights.patterns[0].data[0]
+          : expenses / daysInPeriod;
 
       return {
         income,
@@ -650,38 +821,6 @@ const TotalContainer = memo(
           radius="10px"
           className="total-container"
         >
-      <div className="balance-section">
-          <div className="icon-container">
-            <FontAwesomeIcon icon={faWallet} />
-          </div>
-          <div className="balance-content">
-            <div className="balance-header">
-              <p className="balance-label">
-                {showAllTimeBalance ? 'All Time Balance' : 'Current Year Balance'}
-              </p>
-              <button
-                className="balance-toggle"
-                onClick={() => setShowAllTimeBalance(!showAllTimeBalance)}
-                title={`Switch to ${showAllTimeBalance ? 'current year' : 'all time'} balance`}
-              >
-                <FontAwesomeIcon icon={showAllTimeBalance ? faToggleOn : faToggleOff} />
-                <span className="toggle-text">
-                  {showAllTimeBalance ? 'All Time' : 'This Year'}
-                </span>
-              </button>
-            </div>
-            <h2 className="balance-amount" data-profit={(showAllTimeBalance ? allTimeBalance : currentYearBalance) > 0}>
-              {formatNumber(showAllTimeBalance ? allTimeBalance : currentYearBalance)} USD
-            </h2>
-            {showAllTimeBalance && (
-              <p className="balance-subtitle">
-                <FontAwesomeIcon icon={faCoins} />
-                Complete financial balance
-              </p>
-            )}
-          </div>
-        </div>
-
           <div className="flow-section">
             <div className="flow-header">
               <h3 className="flow-title">Cash Flow</h3>
@@ -934,4 +1073,3 @@ const TotalContainerWithErrorBoundary = (props: TotalContainerProps) => (
 );
 
 export default TotalContainerWithErrorBoundary;
-

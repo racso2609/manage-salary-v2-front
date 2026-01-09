@@ -22,6 +22,33 @@ export const darkTheme: DefaultTheme = {
       large: '20px',
       xlarge: '24px',
     },
+    responsive: {
+      h1: {
+        desktop: '2.5rem',
+        tablet: '2rem',
+        mobile: '1.75rem',
+      },
+      h2: {
+        desktop: '2rem',
+        tablet: '1.75rem',
+        mobile: '1.5rem',
+      },
+      h3: {
+        desktop: '1.5rem',
+        tablet: '1.375rem',
+        mobile: '1.25rem',
+      },
+      body: {
+        desktop: '1rem',
+        tablet: '0.95rem',
+        mobile: '0.9rem',
+      },
+      small: {
+        desktop: '0.875rem',
+        tablet: '0.8rem',
+        mobile: '0.75rem',
+      },
+    },
     weight: {
       normal: 400,
       bold: 500,

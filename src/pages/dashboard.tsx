@@ -17,7 +17,7 @@ import { Record } from "../types/manageSalaryTypes/records";
 
 import RecordEditModal from "../components/RecordEditModal";
 import useUpdateRecord from "../hooks/actions/useUpdateRecord";
-import TotalContainer from "../components/TotalContainer";
+import TotalContainer, { BalanceSection } from "../components/TotalContainer";
 import TopCategories from "../components/TopCategories";
 import RecentTransactions from "../components/RecentTransactions";
 import SpendingInsights from "../components/SpendingInsights";
@@ -36,6 +36,16 @@ const Dashboard = styled.section`
   h2 {
     margin-top: 0;
   }
+
+  @media (max-width: 768px) {
+    width: 95%;
+    gap: 16px;
+  }
+
+  @media (max-width: 480px) {
+    width: 98%;
+    gap: 12px;
+  }
 `;
 
 const ItemsLayout = styled.div`
@@ -46,13 +56,36 @@ const ItemsLayout = styled.div`
   border-radius: 10px;
   height: 500px;
   overflow-y: auto;
+
+  @media (max-width: 768px) {
+    height: 350px;
+  }
+
+  @media (max-width: 480px) {
+    height: 250px;
+  }
 `;
 
 const Header = styled.header`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   padding: 10px 0px;
   gap: 20px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 8px 0px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 12px;
+    padding: 6px 0px;
+  }
 `;
 
 const ListsSection = styled.section`
@@ -60,6 +93,15 @@ const ListsSection = styled.section`
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 20px;
   justify-content: space-around;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 12px;
+  }
 `;
 
 const AlertBanner = ({
@@ -275,7 +317,9 @@ const DashboardPage = () => {
         message: `Low Balance: Below $${lowBalanceThreshold}`,
       });
     }
-    const totalExpenses = dashboardData ? Number(dashboardData.totals.expenses) / 100 : 0;
+    const totalExpenses = dashboardData
+      ? Number(dashboardData.totals.expenses) / 100
+      : 0;
     if (totalExpenses > highSpendingThreshold) {
       alertList.push({
         type: "danger",
@@ -340,6 +384,15 @@ const DashboardPage = () => {
         background: ${({ theme }) => theme.colors.borderLight}40;
       }
     }
+
+    @media (max-width: 480px) {
+      margin-bottom: 16px;
+
+      .toggle-button {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+    }
   `;
 
   return (
@@ -362,7 +415,6 @@ const DashboardPage = () => {
 
       {viewMode === "analytics" ? (
         <AnalyticsDashboard
-          records={data?.records || {}}
           dateRange={{
             from: dateInput.value.from,
             to: dateInput.value.to,
@@ -371,6 +423,13 @@ const DashboardPage = () => {
         />
       ) : (
         <>
+          <Card background="gray">
+            <BalanceSection
+              currentYearBalance={currentYearBalance}
+              allTimeBalance={allTimeBalance}
+            />
+          </Card>
+
           <Header>
             <TotalContainer
               currentYearBalance={currentYearBalance}
@@ -430,7 +489,6 @@ const DashboardPage = () => {
                   from: dateInput.value.from,
                   to: dateInput.value.to,
                 }}
-                isLoading={isLoading}
               />
             </InsightsErrorBoundary>
           </Header>
