@@ -385,10 +385,11 @@ const ChartSection = memo(
                     },
                   ]}
                   onItemClick={(_, item) => handleItemClick(item)}
+                  hideLegend
                   sx={{
-                    '& .MuiChartsLegend-label': {
-                      fill: 'rgba(255, 255, 255, 0.87) !important',
-                      fontSize: '12px !important',
+                    "& .MuiChartsLegend-label": {
+                      fill: "rgba(255, 255, 255, 0.87) !important",
+                      fontSize: "12px !important",
                     },
                   }}
                 />
@@ -400,7 +401,7 @@ const ChartSection = memo(
                       data: formattedData.map((item) => item.label),
                       scaleType: "band",
                       tickLabelStyle: {
-                        fill: 'rgba(255, 255, 255, 0.87)',
+                        fill: "rgba(255, 255, 255, 0.87)",
                         fontSize: 12,
                       },
                     },
@@ -408,7 +409,7 @@ const ChartSection = memo(
                   yAxis={[
                     {
                       tickLabelStyle: {
-                        fill: 'rgba(255, 255, 255, 0.87)',
+                        fill: "rgba(255, 255, 255, 0.87)",
                         fontSize: 12,
                       },
                     },
@@ -416,22 +417,22 @@ const ChartSection = memo(
                   series={[
                     {
                       data: formattedData.map((item) => item.value),
-                      color: '#2196f3',
+                      color: "#2196f3",
                     },
                   ]}
                   onItemClick={(_, item) => handleItemClick(item)}
                   sx={{
-                    '& .MuiChartsAxis-tickLabel': {
-                      fill: 'rgba(255, 255, 255, 0.87) !important',
+                    "& .MuiChartsAxis-tickLabel": {
+                      fill: "rgba(255, 255, 255, 0.87) !important",
                     },
-                    '& .MuiChartsAxis-line': {
-                      stroke: 'rgba(255, 255, 255, 0.3)',
+                    "& .MuiChartsAxis-line": {
+                      stroke: "rgba(255, 255, 255, 0.3)",
                     },
-                    '& .MuiChartsAxis-tick': {
-                      stroke: 'rgba(255, 255, 255, 0.3)',
+                    "& .MuiChartsAxis-tick": {
+                      stroke: "rgba(255, 255, 255, 0.3)",
                     },
-                    '& .MuiChartsGrid-line': {
-                      stroke: 'rgba(255, 255, 255, 0.1)',
+                    "& .MuiChartsGrid-line": {
+                      stroke: "rgba(255, 255, 255, 0.1)",
                     },
                   }}
                 />
