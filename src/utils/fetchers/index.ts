@@ -15,12 +15,21 @@ class FetcherError extends Error {
 
 type FetcherArgs = Omit<RequestInit, "body"> & {
   body?: Record<string, unknown>;
+  params?: Record<string, string | number | boolean | undefined>;
 };
 
 export const fetcher = async <T>(
   url: string,
   options: FetcherArgs = {},
 ): Promise<T> => {
+  if (options.params) {
+    const urlObj = new URL(url);
+    Object.entries(options.params).forEach(([key, value]) => {
+      if (value) urlObj.searchParams.append(key, String(value));
+    });
+    url = urlObj.toString();
+  }
+
   const res = await fetch(url, {
     ...options,
     method: options.body && !options.method ? "POST" : options.method || "GET",

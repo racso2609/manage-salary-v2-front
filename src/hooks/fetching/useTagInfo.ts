@@ -13,6 +13,7 @@ const useTagInfo = ({ tagId }: useTag) => {
   const { sessionToken } = useAuthContext();
 
   return useSWR(`/tags/${tagId}/info`, async (url) => {
+    if (!sessionToken) throw new Error("No session token");
     const data = await manageSalaryFetcher<{
       tag: Tag;
       recordsGrouped: {

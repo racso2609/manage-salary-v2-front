@@ -20,6 +20,7 @@ import TotalContainer from "../components/TotalContainer";
 import TopCategories from "../components/TopCategories";
 import RecentTransactions from "../components/RecentTransactions";
 import SpendingInsights from "../components/SpendingInsights";
+import InsightsErrorBoundary from "../components/SpendingInsightsErrorBoundary";
 import AnalyticsDashboard from "../components/AnalyticsDashboard";
 import ChartSection from "../components/ChartSection";
 
@@ -140,7 +141,9 @@ const RecordsPerLabel = ({
 
 const DashboardPage = () => {
   const [selectedTag, setSelectedTag] = useState<string | undefined>(undefined);
-  const [viewMode, setViewMode] = useState<'dashboard' | 'analytics'>('dashboard');
+  const [viewMode, setViewMode] = useState<"dashboard" | "analytics">(
+    "dashboard",
+  );
   const dateInput = useForm<{
     from: string;
     to: string;
@@ -336,27 +339,25 @@ const DashboardPage = () => {
     }
   `;
 
-
-
   return (
     <Dashboard>
       <AlertBanner alerts={alerts} />
       <ViewToggle>
         <button
-          className={`toggle-button ${viewMode === 'dashboard' ? 'active' : ''}`}
-          onClick={() => setViewMode('dashboard')}
+          className={`toggle-button ${viewMode === "dashboard" ? "active" : ""}`}
+          onClick={() => setViewMode("dashboard")}
         >
           Dashboard
         </button>
         <button
-          className={`toggle-button ${viewMode === 'analytics' ? 'active' : ''}`}
-          onClick={() => setViewMode('analytics')}
+          className={`toggle-button ${viewMode === "analytics" ? "active" : ""}`}
+          onClick={() => setViewMode("analytics")}
         >
           Analytics
         </button>
       </ViewToggle>
 
-      {viewMode === 'analytics' ? (
+      {viewMode === "analytics" ? (
         <AnalyticsDashboard
           records={data?.records || {}}
           dateRange={{
@@ -368,102 +369,103 @@ const DashboardPage = () => {
       ) : (
         <>
           <Header>
-        <TotalContainer
-          currentYearBalance={currentYearBalance}
-          allTimeBalance={allTimeBalance}
-          data={data}
-          tag={tag}
-          onChartTypeChange={setCharType}
-          isLoading={isLoading}
-          dateRange={{
-            from: dateInput.value.from,
-            to: dateInput.value.to,
-          }}
-        />
-        <Card
-          background="gray"
-          width={"100%"}
-          radius="10px"
-          className="chart-section"
-          padding="10px"
-        >
-          <ChartSection
-            records={records}
-            chartType={chartType as "in" | "out"}
-            onTagClick={handleTagSelection}
-            isLoading={isLoading}
-            onRefresh={mutateDashboard}
-            dateRange={{
-              from: dateInput.value.from ?? "",
-              to: dateInput.value.to ?? "",
-            }}
-            onDateRangeChange={(range) => {
-              dateInput.onChange({
-                target: {
-                  value: {
-                    from: range.from,
-                    to: range.to,
-                  },
-                },
-              });
-            }}
-          />
-        </Card>
-        <TopCategories
-          topCategories={topCategories}
-          onTagClick={handleTagSelection}
-          isLoading={isLoading}
-        />
-        <RecentTransactions
-          recentTransactions={recentTransactions}
-          onTransactionClick={handleEditRecord}
-          isLoading={isLoading}
-        />
-        <SpendingInsights
-          records={data?.records || {}}
-          dateRange={{
-            from: dateInput.value.from,
-            to: dateInput.value.to,
-          }}
-          isLoading={isLoading}
-        />
-      </Header>
-      <ListsSection>
-        <div>
-          <h2>Records</h2>
-          <ItemsLayout>
-            {
-              <RecordsPerLabel
-                records={data?.records ?? {}}
-                onDelete={handleDelete}
-                onEdit={handleEditRecord}
+            <TotalContainer
+              currentYearBalance={currentYearBalance}
+              allTimeBalance={allTimeBalance}
+              data={data}
+              tag={tag}
+              onChartTypeChange={setCharType}
+              isLoading={isLoading}
+              dateRange={{
+                from: dateInput.value.from,
+                to: dateInput.value.to,
+              }}
+            />
+            <Card
+              background="gray"
+              width={"100%"}
+              radius="10px"
+              className="chart-section"
+              padding="10px"
+            >
+              <ChartSection
+                records={records}
+                chartType={chartType as "in" | "out"}
+                onTagClick={handleTagSelection}
+                isLoading={isLoading}
+                onRefresh={mutateDashboard}
+                dateRange={{
+                  from: dateInput.value.from ?? "",
+                  to: dateInput.value.to ?? "",
+                }}
+                onDateRangeChange={(range) => {
+                  dateInput.onChange({
+                    target: {
+                      value: {
+                        from: range.from,
+                        to: range.to,
+                      },
+                    },
+                  });
+                }}
               />
-            }
-          </ItemsLayout>
-        </div>
-        <div>
-          <h2>Tags</h2>
+            </Card>
+            <TopCategories
+              topCategories={topCategories}
+              onTagClick={handleTagSelection}
+              isLoading={isLoading}
+            />
+            <RecentTransactions
+              recentTransactions={recentTransactions}
+              onTransactionClick={handleEditRecord}
+              isLoading={isLoading}
+            />
+            <InsightsErrorBoundary>
+              <SpendingInsights
+                dateRange={{
+                  from: dateInput.value.from,
+                  to: dateInput.value.to,
+                }}
+                isLoading={isLoading}
+              />
+            </InsightsErrorBoundary>
+          </Header>
+          <ListsSection>
+            <div>
+              <h2>Records</h2>
+              <ItemsLayout>
+                {
+                  <RecordsPerLabel
+                    records={data?.records ?? {}}
+                    onDelete={handleDelete}
+                    onEdit={handleEditRecord}
+                  />
+                }
+              </ItemsLayout>
+            </div>
+            <div>
+              <h2>Tags</h2>
 
-          <ItemsLayout>
-            {tags?.map((tag) => {
-              return (
-                <TagItem
-                  key={tag._id}
-                  tag={tag}
-                  onDelete={() => handleDelete(tag._id)}
-                />
-              );
-            })}
-          </ItemsLayout>
-          </div>
-        </ListsSection>
-        <RecordEditModal
-          open={editModalOpen}
-          record={editingRecord}
-          onClose={() => setEditModalOpen(false)}
-          onSave={handleSaveEdit}
-        />
-      </>
+              <ItemsLayout>
+                {tags?.map((tag) => {
+                  return (
+                    <TagItem
+                      key={tag._id}
+                      tag={tag}
+                      onDelete={() => handleDelete(tag._id)}
+                    />
+                  );
+                })}
+              </ItemsLayout>
+            </div>
+          </ListsSection>
+          <RecordEditModal
+            open={editModalOpen}
+            record={editingRecord}
+            onClose={() => setEditModalOpen(false)}
+            onSave={handleSaveEdit}
+          />
+        </>
       )}
     </Dashboard>
   );

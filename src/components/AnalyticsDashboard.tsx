@@ -12,6 +12,7 @@ import {
   faArrowDown
 } from "@fortawesome/free-solid-svg-icons";
 import { Card } from "./utils/card";
+import useAnalytics from "../hooks/fetching/useAnalytics";
 
 const AnalyticsContainer = styled.div`
   display: flex;
@@ -254,91 +255,48 @@ const AnalyticsDashboard = ({
   dateRange,
   isLoading = false
 }: AnalyticsDashboardProps) => {
-  // Calculate comprehensive analytics
-  const analytics = React.useMemo(() => {
+  const { data: spendingAnalytics, isLoading: analyticsLoading, error } = useAnalytics({ from: dateRange.from, to: dateRange.to });
+
+  // Calculate income-related analytics locally
+  const incomeAnalytics = React.useMemo(() => {
     if (!records || isLoading) return null;
 
     const allRecords = Object.values(records).flatMap((month: any) =>
       month.records || []
     );
 
-    const outflowRecords = allRecords.filter((record: any) => record.type === 'out');
     const inflowRecords = allRecords.filter((record: any) => record.type === 'in');
-
-    if (outflowRecords.length === 0) return null;
-
-    // Basic metrics
-    const totalSpending = outflowRecords.reduce((sum: number, record: any) =>
-      sum + Number(record.amount), 0
-    );
 
     const totalIncome = inflowRecords.reduce((sum: number, record: any) =>
       sum + Number(record.amount), 0
     );
 
-    // Time-based calculations
     const startDate = new Date(dateRange.from);
     const endDate = new Date(dateRange.to);
     const daysDiff = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
 
-    const avgDailySpending = totalSpending / daysDiff;
     const avgDailyIncome = totalIncome / daysDiff;
 
-    // Savings rate
-    const savingsRate = totalIncome > 0 ? ((totalIncome - totalSpending) / totalIncome) * 100 : 0;
-
-    // Category analysis
-    const spendingByCategory = outflowRecords.reduce((acc: { [key: string]: number }, record: any) => {
-      const categoryName = record.tag?.name || 'Uncategorized';
-      acc[categoryName] = (acc[categoryName] || 0) + Number(record.amount);
-      return acc;
-    }, {});
-
-    const topCategory = Object.entries(spendingByCategory).reduce((max, [category, amount]) =>
-      amount > max.amount ? { category, amount } : max,
-      { category: '', amount: 0 }
-    );
-
-    // Trend analysis (last 30 days vs previous 30 days)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    const recentSpending = outflowRecords
-      .filter((record: any) => new Date(record.date) >= thirtyDaysAgo)
-      .reduce((sum: number, record: any) => sum + Number(record.amount), 0);
-
-    const olderSpending = outflowRecords
-      .filter((record: any) => new Date(record.date) < thirtyDaysAgo)
-      .reduce((sum: number, record: any) => sum + Number(record.amount), 0);
-
-    const spendingChange = olderSpending > 0 ? ((recentSpending - olderSpending) / olderSpending) * 100 : 0;
-
-    // Monthly breakdown (simplified)
-    const monthlyData = Object.entries(records).map(([monthKey, monthData]: [string, any]) => {
-      const monthSpending = monthData.records
-        .filter((record: any) => record.type === 'out')
-        .reduce((sum: number, record: any) => sum + Number(record.amount), 0);
-
-      return {
-        month: monthKey,
-        spending: monthSpending,
-        transactions: monthData.records.filter((record: any) => record.type === 'out').length
-      };
-    });
-
     return {
-      totalSpending,
       totalIncome,
-      avgDailySpending,
-      avgDailyIncome,
-      savingsRate,
-      topCategory,
-      spendingChange,
-      transactionCount: outflowRecords.length,
-      monthlyData,
-      spendingByCategory
+      avgDailyIncome
     };
   }, [records, dateRange, isLoading]);
+
+  const analytics = React.useMemo(() => {
+    if (!spendingAnalytics || !incomeAnalytics) return null;
+
+    const savingsRate = incomeAnalytics.totalIncome > 0 ? ((incomeAnalytics.totalIncome - spendingAnalytics.totalSpending) / incomeAnalytics.totalIncome) * 100 : 0;
+
+    return {
+      ...spendingAnalytics,
+      totalIncome: incomeAnalytics.totalIncome,
+      avgDailyIncome: incomeAnalytics.avgDailyIncome,
+      savingsRate,
+      spendingChange: spendingAnalytics.spendingTrend.changePercent,
+      transactionCount: 0 // Not in API, set to 0 or remove if not used
+    };
+  }, [spendingAnalytics, incomeAnalytics]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -349,7 +307,18 @@ const AnalyticsDashboard = ({
     }).format(amount);
   };
 
-  if (isLoading || !analytics) {
+  if (isLoading || analyticsLoading || !analytics || error) {
+    if (error) {
+      return (
+        <AnalyticsContainer>
+          <DashboardHeader>
+            <FontAwesomeIcon icon={faChartLine} className="header-icon" />
+            <h1 className="header-title">Analytics Dashboard</h1>
+          </DashboardHeader>
+          <div style={{ color: 'red', textAlign: 'center' }}>Failed to load analytics. Please try again.</div>
+        </AnalyticsContainer>
+      );
+    }
     return (
       <AnalyticsContainer>
         <DashboardHeader>
@@ -401,7 +370,7 @@ const AnalyticsDashboard = ({
             </div>
           </div>
           <div className="metric-title">Top Category</div>
-          <div className="metric-value">{analytics.topCategory.category}</div>
+          <div className="metric-value">{analytics.topCategory.name}</div>
           <p className="metric-subtitle">{formatCurrency(analytics.topCategory.amount)}</p>
         </MetricCard>
 
@@ -415,8 +384,8 @@ const AnalyticsDashboard = ({
             </div>
           </div>
           <div className="metric-title">Daily Average</div>
-          <div className="metric-value">{formatCurrency(analytics.avgDailySpending)}</div>
-          <p className="metric-subtitle">{analytics.transactionCount} transactions</p>
+          <div className="metric-value">{formatCurrency(analytics.dailyAverage)}</div>
+          <p className="metric-subtitle">Spending per day</p>
         </MetricCard>
 
         <MetricCard radius="12px">
@@ -470,7 +439,7 @@ const AnalyticsDashboard = ({
             <h4 className="insight-title">Smart Insights</h4>
           </div>
           <div className="insight-content">
-            Your spending on {analytics.topCategory.category.toLowerCase()} is {((analytics.topCategory.amount / analytics.totalSpending) * 100).toFixed(1)}% of your total expenses.
+            Your spending on {analytics.topCategory.name.toLowerCase()} is {((analytics.topCategory.amount / analytics.totalSpending) * 100).toFixed(1)}% of your total expenses.
             Consider setting a budget for this category to optimize your spending.
           </div>
         </InsightCard>

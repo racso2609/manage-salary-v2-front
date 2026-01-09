@@ -15,6 +15,7 @@ import {
 import { Card } from "../utils/card";
 import { formatNumber } from "../../utils/formatter/numbers";
 import moment from "moment";
+import useAnalytics from "../../hooks/fetching/useAnalytics";
 
 const Header = styled.header`
   display: grid;
@@ -594,6 +595,7 @@ const TotalContainer = memo(
     isLoading,
     dateRange,
   }: TotalContainerProps) => {
+    const { data: analytics } = useAnalytics({ from: dateRange.from, to: dateRange.to });
     const [showAllTimeBalance, setShowAllTimeBalance] = useState(false);
 
     // Memoize expensive calculations
@@ -607,7 +609,7 @@ const TotalContainer = memo(
       const startDate = moment(dateRange.from || moment().startOf("year"));
       const endDate = moment(dateRange.to || moment().endOf("year"));
       const daysInPeriod = Math.max(1, endDate.diff(startDate, "days") + 1);
-      const dailyAverage = expenses / daysInPeriod;
+      const dailyAverage = analytics?.dailyAverage || expenses / daysInPeriod;
 
       return {
         income,
@@ -617,7 +619,7 @@ const TotalContainer = memo(
         daysInPeriod,
         dailyAverage,
       };
-    }, [data?.subTotal?.in, data?.subTotal?.out, dateRange.from, dateRange.to]);
+    }, [data?.subTotal?.in, data?.subTotal?.out, dateRange.from, dateRange.to, analytics?.dailyAverage]);
 
     const {
       income,
