@@ -192,8 +192,8 @@ const DashboardPage = () => {
   }>({
     id: "date-filter",
     defaultValue: {
-      from: moment().startOf("year").format("YYYY-MM-DD"),
-      to: moment().endOf("year").format("YYYY-MM-DD"),
+      from: "",
+      to: "",
     },
     type: "date",
   });
@@ -259,8 +259,6 @@ const DashboardPage = () => {
   // Calculate different balance views
   const currentYearBalance = useMemo(() => {
     // Current year balance - what user sees by default
-    console.log('data:', data);
-    console.log('data?.total:', data?.total);
     return data?.total || 0;
   }, [data]);
 
@@ -440,7 +438,6 @@ const DashboardPage = () => {
                 from: dateInput.value.from,
                 to: dateInput.value.to,
               }}
-
             />
             <Card
               background="gray"
