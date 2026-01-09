@@ -5,7 +5,6 @@ import TagItem from "../components/Tag";
 import RecordItem from "../components/Record";
 import { Card } from "../components/utils/card";
 import useDashboardInfo from "../hooks/fetching/useDashboardInfo";
-import useDashboardData from "../hooks/fetching/useDashboardData";
 
 import { useMemo, useState } from "react";
 import useTag from "../hooks/fetching/useTag";
@@ -210,7 +209,6 @@ const DashboardPage = () => {
     from: dateInput.value.from,
     to: dateInput.value.to,
   });
-  const { data: dashboardData } = useDashboardData({ tag: selectedTag });
   const { data: fullYearData } = useDashboardInfo({});
 
   const [chartType, setCharType] = useState<string>("out");
@@ -261,8 +259,10 @@ const DashboardPage = () => {
   // Calculate different balance views
   const currentYearBalance = useMemo(() => {
     // Current year balance - what user sees by default
-    return dashboardData ? Number(dashboardData.totals.balance) / 100 : 0;
-  }, [dashboardData]);
+    console.log('data:', data);
+    console.log('data?.total:', data?.total);
+    return data?.total || 0;
+  }, [data]);
 
   const allTimeBalance = useMemo(() => {
     // All time balance - complete historical balance
@@ -317,9 +317,7 @@ const DashboardPage = () => {
         message: `Low Balance: Below $${lowBalanceThreshold}`,
       });
     }
-    const totalExpenses = dashboardData
-      ? Number(dashboardData.totals.expenses) / 100
-      : 0;
+    const totalExpenses = data?.subTotal?.out || 0;
     if (totalExpenses > highSpendingThreshold) {
       alertList.push({
         type: "danger",
@@ -327,7 +325,7 @@ const DashboardPage = () => {
       });
     }
     return alertList;
-  }, [currentYearBalance, dashboardData]);
+  }, [currentYearBalance, data]);
 
   const records = useMemo(() => {
     const recordsList = Object.values(data?.records ?? {})
@@ -442,7 +440,7 @@ const DashboardPage = () => {
                 from: dateInput.value.from,
                 to: dateInput.value.to,
               }}
-              dashboardData={dashboardData}
+
             />
             <Card
               background="gray"

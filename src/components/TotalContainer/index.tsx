@@ -9,14 +9,13 @@ import {
   faPercent,
   faCalendarDay,
   faToggleOn,
-  faToggleOff,
-  faCoins,
+  faToggleOff
 } from "@fortawesome/free-solid-svg-icons";
 import { Card } from "../utils/card";
 import { formatNumber } from "../../utils/formatter/numbers";
 import moment from "moment";
 import useInsights from "../../hooks/fetching/useInsights";
-import Button from "../ui/Button";
+
 
 const Header = styled.header`
   display: grid;
