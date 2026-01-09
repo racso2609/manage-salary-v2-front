@@ -20,6 +20,7 @@ import TotalContainer from "../components/TotalContainer";
 import TopCategories from "../components/TopCategories";
 import RecentTransactions from "../components/RecentTransactions";
 import SpendingInsights from "../components/SpendingInsights";
+import AnalyticsDashboard from "../components/AnalyticsDashboard";
 import ChartSection from "../components/ChartSection";
 
 const Dashboard = styled.section`
@@ -139,6 +140,7 @@ const RecordsPerLabel = ({
 
 const DashboardPage = () => {
   const [selectedTag, setSelectedTag] = useState<string | undefined>(undefined);
+  const [viewMode, setViewMode] = useState<'dashboard' | 'analytics'>('dashboard');
   const dateInput = useForm<{
     from: string;
     to: string;
@@ -301,10 +303,71 @@ const DashboardPage = () => {
       });
   }, [data, chartType, dateInput.value.from, dateInput.value.to]);
 
+  // View Toggle Buttons
+  const ViewToggle = styled.div`
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 4px;
+    background: ${({ theme }) => theme.colors.borderLight}20;
+    border-radius: 8px;
+    width: fit-content;
+
+    .toggle-button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: ${({ theme }) => theme.colors.textSecondary};
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &.active {
+        background: ${({ theme }) => theme.colors.primary};
+        color: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      &:hover:not(.active) {
+        background: ${({ theme }) => theme.colors.borderLight}40;
+      }
+    }
+  `;
+
+
+
   return (
     <Dashboard>
       <AlertBanner alerts={alerts} />
-      <Header>
+      <ViewToggle>
+        <button
+          className={`toggle-button ${viewMode === 'dashboard' ? 'active' : ''}`}
+          onClick={() => setViewMode('dashboard')}
+        >
+          Dashboard
+        </button>
+        <button
+          className={`toggle-button ${viewMode === 'analytics' ? 'active' : ''}`}
+          onClick={() => setViewMode('analytics')}
+        >
+          Analytics
+        </button>
+      </ViewToggle>
+
+      {viewMode === 'analytics' ? (
+        <AnalyticsDashboard
+          records={data?.records || {}}
+          dateRange={{
+            from: dateInput.value.from,
+            to: dateInput.value.to,
+          }}
+          isLoading={isLoading}
+        />
+      ) : (
+        <>
+          <Header>
         <TotalContainer
           currentYearBalance={currentYearBalance}
           allTimeBalance={allTimeBalance}
@@ -392,14 +455,16 @@ const DashboardPage = () => {
               );
             })}
           </ItemsLayout>
-        </div>
-      </ListsSection>
-      <RecordEditModal
-        open={editModalOpen}
-        record={editingRecord}
-        onClose={() => setEditModalOpen(false)}
-        onSave={handleSaveEdit}
-      />
+          </div>
+        </ListsSection>
+        <RecordEditModal
+          open={editModalOpen}
+          record={editingRecord}
+          onClose={() => setEditModalOpen(false)}
+          onSave={handleSaveEdit}
+        />
+      </>
+      )}
     </Dashboard>
   );
 };
