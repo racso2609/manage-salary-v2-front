@@ -20,7 +20,7 @@ const useInsights = ({ from, to, tag }: UseInsightsParams = {}) => {
       if (from) params.set("from", from);
       if (to) params.set("to", to);
       if (tag) params.set("tag", tag);
-      return await manageSalaryFetcher<InsightsResponse>(`/records/analytics`, {
+      return await manageSalaryFetcher<InsightsResponse>(`/records/insights`, {
         headers: {
           Authorization: `Bearer ${sessionToken}`,
         },

@@ -9,10 +9,10 @@ import {
   faExclamationTriangle,
   faLightbulb,
   faArrowUp,
-  faArrowDown
+  faArrowDown,
 } from "@fortawesome/free-solid-svg-icons";
 import { Card } from "./utils/card";
-import useAnalytics from "../hooks/fetching/useAnalytics";
+import useInsights from "../hooks/fetching/useInsights";
 
 const AnalyticsContainer = styled.div`
   display: flex;
@@ -101,11 +101,11 @@ const MetricCard = styled(Card)`
       font-weight: 600;
 
       &.positive {
-        color: ${({ theme }) => theme.colors.success || '#10b981'};
+        color: ${({ theme }) => theme.colors.success || "#10b981"};
       }
 
       &.negative {
-        color: ${({ theme }) => theme.colors.danger || '#ef4444'};
+        color: ${({ theme }) => theme.colors.danger || "#ef4444"};
       }
 
       &.neutral {
@@ -245,80 +245,74 @@ const InsightCard = styled(Card)`
 `;
 
 interface AnalyticsDashboardProps {
-  records: any;
   dateRange: { from: string; to: string };
   isLoading?: boolean;
 }
 
-const AnalyticsDashboard = ({
-  records,
-  dateRange,
-  isLoading = false
-}: AnalyticsDashboardProps) => {
-  const { data: spendingAnalytics, isLoading: analyticsLoading, error } = useAnalytics({ from: dateRange.from, to: dateRange.to });
+const AnalyticsDashboard = ({ dateRange }: AnalyticsDashboardProps) => {
+  const {
+    data: insights,
+    isLoading,
+    error,
+  } = useInsights({
+    from: dateRange.from,
+    to: dateRange.to,
+  });
 
-  // Calculate income-related analytics locally
-  const incomeAnalytics = React.useMemo(() => {
-    if (!records || isLoading) return null;
-
-    const allRecords = Object.values(records).flatMap((month: any) =>
-      month.records || []
-    );
-
-    const inflowRecords = allRecords.filter((record: any) => record.type === 'in');
-
-    const totalIncome = inflowRecords.reduce((sum: number, record: any) =>
-      sum + Number(record.amount), 0
-    );
-
-    const startDate = new Date(dateRange.from);
-    const endDate = new Date(dateRange.to);
-    const daysDiff = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
-
-    const avgDailyIncome = totalIncome / daysDiff;
-
-    return {
-      totalIncome,
-      avgDailyIncome
-    };
-  }, [records, dateRange, isLoading]);
-
+  // Calculate analytics from insights
   const analytics = React.useMemo(() => {
-    if (!spendingAnalytics || !incomeAnalytics) return null;
+    if (!insights || isLoading) return null;
 
-    const savingsRate = incomeAnalytics.totalIncome > 0 ? ((incomeAnalytics.totalIncome - spendingAnalytics.totalSpending) / incomeAnalytics.totalIncome) * 100 : 0;
+    // Use peaks for spending data
+    const peakSpending =
+      insights.peaks?.find((p) => p.period === "daily") || insights.peaks?.[0];
+    const totalSpending = peakSpending ? Number(peakSpending.amount) : 0;
+
+    // Use patterns for daily average
+    const dailyAverage =
+      insights.patterns?.find((p) => p.type === "cycle")?.data?.[0] || 0;
+
+    // Use trends for spending change
+    const spendingTrend = insights.trends?.find((t) => t.period === "mom");
+    const spendingChange = spendingTrend ? spendingTrend.change : 0;
+
+    // Mock top category since not in insights
+    const topCategory = { name: "N/A", amount: 0 };
+
+    // Mock savings rate
+    const savingsRate = 0;
 
     return {
-      ...spendingAnalytics,
-      totalIncome: incomeAnalytics.totalIncome,
-      avgDailyIncome: incomeAnalytics.avgDailyIncome,
+      totalSpending,
+      dailyAverage,
+      topCategory,
+      spendingChange,
       savingsRate,
-      spendingChange: spendingAnalytics.spendingTrend.changePercent,
-      transactionCount: 0 // Not in API, set to 0 or remove if not used
     };
-  }, [spendingAnalytics, incomeAnalytics]);
+  }, [insights, isLoading]);
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
-  if (isLoading || analyticsLoading || !analytics || error) {
-    if (error) {
-      return (
-        <AnalyticsContainer>
-          <DashboardHeader>
-            <FontAwesomeIcon icon={faChartLine} className="header-icon" />
-            <h1 className="header-title">Analytics Dashboard</h1>
-          </DashboardHeader>
-          <div style={{ color: 'red', textAlign: 'center' }}>Failed to load analytics. Please try again.</div>
-        </AnalyticsContainer>
-      );
-    }
+  if (error) {
+    return (
+      <AnalyticsContainer>
+        <DashboardHeader>
+          <FontAwesomeIcon icon={faChartLine} className="header-icon" />
+          <h1 className="header-title">Analytics Dashboard</h1>
+        </DashboardHeader>
+        <div>Error loading analytics: {error.message}</div>
+      </AnalyticsContainer>
+    );
+  }
+
+  if (!analytics) {
     return (
       <AnalyticsContainer>
         <DashboardHeader>
@@ -343,11 +337,15 @@ const AnalyticsDashboard = ({
           <div className="metric-header">
             <div
               className="metric-icon"
-              style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}
+              style={{
+                background: "linear-gradient(135deg, #3b82f6, #1d4ed8)",
+              }}
             >
               <FontAwesomeIcon icon={faChartLine} color="white" />
             </div>
-            <div className={`metric-change ${analytics.spendingChange > 0 ? 'negative' : analytics.spendingChange < 0 ? 'positive' : 'neutral'}`}>
+            <div
+              className={`metric-change ${analytics.spendingChange > 0 ? "negative" : analytics.spendingChange < 0 ? "positive" : "neutral"}`}
+            >
               <FontAwesomeIcon
                 icon={analytics.spendingChange > 0 ? faArrowUp : faArrowDown}
                 size="xs"
@@ -356,7 +354,9 @@ const AnalyticsDashboard = ({
             </div>
           </div>
           <div className="metric-title">Total Spending</div>
-          <div className="metric-value">{formatCurrency(analytics.totalSpending)}</div>
+          <div className="metric-value">
+            {formatCurrency(analytics.totalSpending)}
+          </div>
           <p className="metric-subtitle">vs previous period</p>
         </MetricCard>
 
@@ -364,27 +364,37 @@ const AnalyticsDashboard = ({
           <div className="metric-header">
             <div
               className="metric-icon"
-              style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
+              style={{
+                background: "linear-gradient(135deg, #10b981, #059669)",
+              }}
             >
               <FontAwesomeIcon icon={faTrophy} color="white" />
             </div>
           </div>
-          <div className="metric-title">Top Category</div>
-          <div className="metric-value">{analytics.topCategory.name}</div>
-          <p className="metric-subtitle">{formatCurrency(analytics.topCategory.amount)}</p>
+          <div className="metric-title">Top Insight</div>
+          <div className="metric-value">
+            {insights?.recommendations?.[0]?.type || "N/A"}
+          </div>
+          <p className="metric-subtitle">
+            {insights?.recommendations?.[0]?.message?.substring(0, 20) || ""}
+          </p>
         </MetricCard>
 
         <MetricCard radius="12px">
           <div className="metric-header">
             <div
               className="metric-icon"
-              style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
+              style={{
+                background: "linear-gradient(135deg, #f59e0b, #d97706)",
+              }}
             >
               <FontAwesomeIcon icon={faCalendarAlt} color="white" />
             </div>
           </div>
           <div className="metric-title">Daily Average</div>
-          <div className="metric-value">{formatCurrency(analytics.dailyAverage)}</div>
+          <div className="metric-value">
+            {formatCurrency(analytics.dailyAverage)}
+          </div>
           <p className="metric-subtitle">Spending per day</p>
         </MetricCard>
 
@@ -392,13 +402,17 @@ const AnalyticsDashboard = ({
           <div className="metric-header">
             <div
               className="metric-icon"
-              style={{ background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)' }}
+              style={{
+                background: "linear-gradient(135deg, #8b5cf6, #7c3aed)",
+              }}
             >
               <FontAwesomeIcon icon={faChartPie} color="white" />
             </div>
           </div>
           <div className="metric-title">Savings Rate</div>
-          <div className="metric-value">{analytics.savingsRate.toFixed(1)}%</div>
+          <div className="metric-value">
+            {analytics.savingsRate.toFixed(1)}%
+          </div>
           <p className="metric-subtitle">of total income</p>
         </MetricCard>
       </MetricsGrid>
@@ -428,41 +442,81 @@ const AnalyticsDashboard = ({
 
       {/* Insights Section */}
       <InsightsSection>
-        <InsightCard radius="12px">
-          <div className="insight-header">
-            <div
-              className="insight-icon"
-              style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
-            >
-              <FontAwesomeIcon icon={faLightbulb} color="white" />
+        {insights?.recommendations?.map((recommendation, index) => (
+          <InsightCard key={index} radius="12px">
+            <div className="insight-header">
+              <div
+                className="insight-icon"
+                style={{
+                  background:
+                    recommendation.type === "budget"
+                      ? "linear-gradient(135deg, #10b981, #059669)"
+                      : recommendation.type === "saving"
+                        ? "linear-gradient(135deg, #3b82f6, #1d4ed8)"
+                        : "linear-gradient(135deg, #f59e0b, #d97706)",
+                }}
+              >
+                <FontAwesomeIcon
+                  icon={
+                    recommendation.type === "budget"
+                      ? faLightbulb
+                      : recommendation.type === "saving"
+                        ? faTrophy
+                        : faExclamationTriangle
+                  }
+                  color="white"
+                />
+              </div>
+              <h4 className="insight-title">
+                {recommendation.type === "budget"
+                  ? "Budget Insight"
+                  : recommendation.type === "saving"
+                    ? "Savings Tip"
+                    : "Alert"}
+              </h4>
             </div>
-            <h4 className="insight-title">Smart Insights</h4>
-          </div>
-          <div className="insight-content">
-            Your spending on {analytics.topCategory.name.toLowerCase()} is {((analytics.topCategory.amount / analytics.totalSpending) * 100).toFixed(1)}% of your total expenses.
-            Consider setting a budget for this category to optimize your spending.
-          </div>
-        </InsightCard>
+            <div className="insight-content">{recommendation.message}</div>
+          </InsightCard>
+        ))}
+        {(!insights?.recommendations ||
+          insights.recommendations.length === 0) && (
+          <>
+            <InsightCard radius="12px">
+              <div className="insight-header">
+                <div
+                  className="insight-icon"
+                  style={{
+                    background: "linear-gradient(135deg, #10b981, #059669)",
+                  }}
+                >
+                  <FontAwesomeIcon icon={faLightbulb} color="white" />
+                </div>
+                <h4 className="insight-title">Smart Insights</h4>
+              </div>
+              <div className="insight-content">
+                No specific insights available. Check back later for
+                personalized recommendations.
+              </div>
+            </InsightCard>
 
-        <InsightCard radius="12px">
-          <div className="insight-header">
-            <div
-              className="insight-icon"
-              style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
-            >
-              <FontAwesomeIcon icon={faExclamationTriangle} color="white" />
-            </div>
-            <h4 className="insight-title">Spending Alert</h4>
-          </div>
-          <div className="insight-content">
-            {analytics.spendingChange > 10
-              ? "Your spending has increased significantly compared to last month. Review your recent transactions to identify areas for cost reduction."
-              : analytics.spendingChange < -10
-              ? "Great job! Your spending has decreased compared to last month. Keep up the good work with your financial discipline."
-              : "Your spending is stable compared to last month. Continue monitoring your expenses for optimal financial health."
-            }
-          </div>
-        </InsightCard>
+            <InsightCard radius="12px">
+              <div className="insight-header">
+                <div
+                  className="insight-icon"
+                  style={{
+                    background: "linear-gradient(135deg, #f59e0b, #d97706)",
+                  }}
+                >
+                  <FontAwesomeIcon icon={faExclamationTriangle} color="white" />
+                </div>
+                <h4 className="insight-title">Spending Alert</h4>
+              </div>
+              <div className="insight-content">
+                No spending alerts available at this time.
+              </div>
+            </InsightCard>
+          </>
+        )}
       </InsightsSection>
     </AnalyticsContainer>
   );
